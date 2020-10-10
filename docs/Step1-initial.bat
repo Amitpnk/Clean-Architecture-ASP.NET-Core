@@ -1,0 +1,2 @@
+cd..
+docsify init ./docs
