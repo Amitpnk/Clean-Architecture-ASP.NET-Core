@@ -43,6 +43,10 @@ Work in progress
     - Hangfire
     - Miniprofiler
     - Enabling CORS
+* Authentication
+    - Identity server 4
+    - OAuth2
+    - JWT Authentication
 * Monitoring tool
     - Health check UI
     - Kibana
