@@ -1,20 +1,25 @@
 ﻿using CA.Application.Common.Interface;
 using CA.Domain.Common;
+using CA.Domain.Contract;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 
 
 namespace CA.Persistance
 {
-    public class ApplicationDbContext : DbContext, IApplicationDbContext
+    public class ApplicationDbContext : DbContext, IUnitOfWork
     {
+        private IDbContextTransaction _dbContextTransaction;
+
         // This constructor is used of runit testing
         public ApplicationDbContext()
         {
 
         }
-        public ApplicationDbContext(DbContextOptions options) : base(options)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
@@ -31,6 +36,8 @@ namespace CA.Persistance
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             //Fluent API configurations 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
@@ -38,25 +45,15 @@ namespace CA.Persistance
 
         }
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    
+        public void BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
-            foreach (var entry in ChangeTracker.Entries<AuditLogEntry>())
-            {
-                switch (entry.State)
-                {
-                    //case EntityState.Added:
-                    //    entry.Entity.CreatedBy = _currentUserService.UserId;
-                    //    entry.Entity.Created = _dateTime.Now;
-                    //    break;
-                    //case EntityState.Modified:
-                    //    entry.Entity.LastModifiedBy = _currentUserService.UserId;
-                    //    entry.Entity.LastModified = _dateTime.Now;
-                    //    break;
-                }
-            }
-
-            return base.SaveChangesAsync(cancellationToken);
+            _dbContextTransaction = Database.BeginTransaction(isolationLevel);
         }
 
+        public void CommitTransaction()
+        {
+            _dbContextTransaction.Commit();
+        }
     }
 }

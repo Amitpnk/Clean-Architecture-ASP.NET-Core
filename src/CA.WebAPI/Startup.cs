@@ -65,7 +65,7 @@ namespace CA.WebAPI
                 setupAction.IncludeXmlComments(xmlCommentsFullPath);
             });
 
-            services.AddScoped<IApplicationDbContext>(provider => provider.GetService<ApplicationDbContext>());
+            //services.AddScoped<IApplicationDbContext>(provider => provider.GetService<ApplicationDbContext>());
 
             services.AddApiVersioning(config =>
             {
