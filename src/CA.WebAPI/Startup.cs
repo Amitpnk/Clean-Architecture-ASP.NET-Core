@@ -1,5 +1,4 @@
 using CA.Application;
-using CA.Application.Common.Interface;
 //using CA.Application.Common.Middleware;
 using CA.Persistance;
 using Microsoft.AspNetCore.Builder;
@@ -34,9 +33,7 @@ namespace CA.WebAPI
 
             //services.AddTransient<IDateService, DateService>();
 
-            services.AddDbContext<ApplicationDbContext>(opt =>
-                opt.UseSqlServer(Configuration.GetConnectionString("CleanArchConn")
-             ));
+            
 
             services.AddSwaggerGen(setupAction =>
             {

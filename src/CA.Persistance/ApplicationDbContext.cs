@@ -1,11 +1,7 @@
-﻿using CA.Application.Common.Interface;
-using CA.Domain.Common;
-using CA.Domain.Contract;
+﻿using CA.Domain.Contract;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Data;
-using System.Threading;
-using System.Threading.Tasks;
 
 
 namespace CA.Persistance
@@ -45,7 +41,7 @@ namespace CA.Persistance
 
         }
 
-    
+
         public void BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             _dbContextTransaction = Database.BeginTransaction(isolationLevel);
