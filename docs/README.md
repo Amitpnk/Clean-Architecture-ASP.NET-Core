@@ -2,7 +2,7 @@
 
 ## Status
 
-Work in progress
+**** **Work in progress******
 
 ## Technology stack
 
@@ -11,11 +11,13 @@ Work in progress
     - Screaming architecture
 * Design Pattern
     - CQRS design pattern
-    - Repository design pattern and UOW (Already implemented in EF Core, where DbSet acts as Repository and DbContext acts as UOW)
+    - Decorator design pattern
     - Mediator design pattern
+    - Repository design pattern
+    - Unit of work 
 * Backend
     - Language: C#
-    - Framework: dotnet core 3.1, Aspnet.core
+    - Framework: dotnet core 3.1, ASP.NET Core
 * UI
     - Framework: React-Redux boiler plate
     - MVC Core
@@ -24,7 +26,7 @@ Work in progress
 * Database
     - MS SQL and Inmemory DB
     - DB Connectivity : Entityframework Core - Code First
-* Cloud
+* Cloud server
     - Azure
 * Feature
     - Web API (Restful service)
@@ -49,18 +51,36 @@ Work in progress
     - JWT Authentication
 * Monitoring tool
     - Health check UI
-    - Kibana
+    - Kibana dashboard for monitoring
 * Testing
     - TDD Aproach
     - Unit testing (Nunit)        
     - Integration testing
+* CI/CD
+    - Task runner: .Net core and CircleCI
+    - Coverage report: Sonarcloud.io
+    - Quality report: Codacy
+    - Docker image and Kubernate
+    - Cloud server: Azure for cloud
 * Documentation
     - Conventional commit - commit and commit message    
 
-## Licence
 
-MIT Licence
+## Give a Star! :star:
+If you like or are using this project to learn or start your solution, please give it a star. Thanks!
 
-## Contacts
+## Support This Project
 
-Connect with us through 
+If you have found this project helpful, either as a library that you use or as a learning tool, please consider buying me a coffee:
+
+<a href="https://www.buymeacoffee.com/codewithamit" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important" ></a>
+
+## Licence Used
+
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Amitpnk/Clean-architecture-ASP.NET-Core/blob/develop/LICENSE)
+
+See the contents of the LICENSE file for details
+
+## Contact
+
+Having any issues or troubles getting started? Drop a mail to amit.naik8103@gmail.com or [Raise a Bug or Feature Request](https://github.com/Amitpnk/Clean-architecture-ASP.NET-Core/issues/new). Always happy to help.
