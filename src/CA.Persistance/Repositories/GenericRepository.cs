@@ -1,11 +1,12 @@
 ﻿using CA.Domain.Common;
 using CA.Domain.Contract;
+using CA.Persistance.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace CA.Persistance.Repositories
 {
-    public class GenericRepository<T, TKey> : IRepository<T, TKey>
+    public class GenericRepository<T, TKey> : IGenericRepository<T, TKey>
         where T : AggregateRoot<TKey>
     {
         private readonly ApplicationDbContext _dbContext;

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace CA.Domain.Contract
 {
-    public interface IRepository<TEntity, TKey>
+    public interface IGenericRepository<TEntity, TKey>
         where TEntity : AggregateRoot<TKey>
     {
         IUnitOfWork UnitOfWork { get; }

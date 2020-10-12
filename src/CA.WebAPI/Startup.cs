@@ -1,10 +1,8 @@
 using CA.Application;
 //using CA.Application.Common.Middleware;
-using CA.Persistance;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -33,7 +31,7 @@ namespace CA.WebAPI
 
             //services.AddTransient<IDateService, DateService>();
 
-            
+
 
             services.AddSwaggerGen(setupAction =>
             {

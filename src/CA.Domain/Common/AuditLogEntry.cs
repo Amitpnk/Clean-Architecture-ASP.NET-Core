@@ -13,5 +13,9 @@ namespace CA.Domain.Common
         public string Log { get; set; }
 
         public DateTime CreatedDateTime { get; set; }
+
+        public string LastModifiedBy { get; set; }
+
+        public DateTime? LastModified { get; set; }
     }
 }

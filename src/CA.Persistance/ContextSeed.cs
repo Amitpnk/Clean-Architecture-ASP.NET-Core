@@ -1,4 +1,5 @@
-﻿//using Microsoft.EntityFrameworkCore;
+﻿//using CA.Domain.Entities;
+//using Microsoft.EntityFrameworkCore;
 //using System;
 //using System.Collections.Generic;
 
@@ -10,98 +11,71 @@
 //        public static void Seed(this ModelBuilder modelBuilder)
 //        {
 
-//            CreateCustomers(modelBuilder);
+//            CreateCards(modelBuilder);
 
-//            CreateEmployees(modelBuilder);
+//            CreateGroups(modelBuilder);
 
-//            CreateProducts(modelBuilder);
-
-//            CreateSales(modelBuilder);
 //        }
 
-//        private static void CreateCustomers(ModelBuilder modelBuilder)
+//        private static void CreateCards(ModelBuilder modelBuilder)
 //        {
-//            List<Customer> customers = CustomersList();
-//            modelBuilder.Entity<Customer>().HasData(customers);
+//            List<Card> cards = CardsList();
+//            modelBuilder.Entity<Card>().HasData(cards);
 //        }
 
-//        private static void CreateEmployees(ModelBuilder modelBuilder)
+//        private static void CreateGroups(ModelBuilder modelBuilder)
 //        {
-//            modelBuilder.Entity<Employee>().HasData(EmployeeList());
+//            modelBuilder.Entity<Group>().HasData(GroupList());
 //        }
 
-//        private static void CreateProducts(ModelBuilder modelBuilder)
+//        private static List<Card> CardsList()
 //        {
-//            modelBuilder.Entity<Product>().HasData(ProductList());
-//        }
-
-//        private static List<Customer> CustomersList()
-//        {
-//            return new List<Customer>()
+//            return new List<Card>()
 //            {
-//                new Customer() { Id=1, Code ="1001", Name = "Martin Fowler" },
-//                new Customer() { Id=2, Code ="1002", Name = "Uncle Bob" },
-//                new Customer() { Id=3, Code ="1003", Name = "Kent Beck" },
-//            };
-//        }
-
-//        private static List<Employee> EmployeeList()
-//        {
-//            return new List<Employee>()
-//            {
-//                new Employee() {Id=1,  Name = "Eric Evans" },
-//                new Employee() {Id=2,  Name = "Greg Young" },
-//                new Employee() {Id=3,  Name = "Udi Dahan" }
-//            };
-//        }
-
-//        private static List<Product> ProductList()
-//        {
-//            return new List<Product>()
-//            {
-//             new Product() { Id=1,Name = "Spaghetti", Price = 5m },
-//             new Product() { Id=2,Name = "Lasagna", Price = 10m },
-//             new Product() { Id=3,Name = "Ravioli", Price = 15m }
-//            };
-//        }
-
-//        private static void CreateSales(ModelBuilder modelBuilder)
-//        {
-//            modelBuilder.Entity<Sale>().HasData(
-//                new Sale()
-//                {
-//                    Id = 1,
-//                    Date = DateTime.Now.Date.AddDays(-3),
-//                    CustomerId = CustomersList()[0].Id,
-//                    EmployeeId = EmployeeList()[0].Id,
-//                    ProductId = ProductList()[0].Id,
-//                    UnitPrice = 5m,
-//                    Quantity = 1
+//                new Card() {
+//                    Id=Guid.NewGuid(),
+//                    Code ="BG 1.1",
+//                    Name = "Chapter 1, Verse 1",
+//                    Description="dhrtarastra uvaca dharma-ksetre kuru-ksetre samaveta yuyutsavah    mamakah pandavas caiva    kim akurvata sanjaya" ,
+//                    Synonmys = "sanjayah--Sanjaya; uvaca--said; drstva--after seeing; tu--but; pandavaanikam--the soldiers of the Pandavas; vyudham--arranged in military phalanx; duryodhanah--King Duryodhana; tada--at that time; acaryam--the teacher; upasangamya--approaching nearby; raja--the king; vacanam--words; abravit--spoke.",
+//                    Meaning  = "Dhrtarastra said: O Sanjaya, after assembling in the place of pilgrimage at Kuruksetra, what did my sons and the sons of Pandu do, being desirous to fight?",
+//                    Chapter= 1,
+//                    Verse =1
 //                },
-
-//                new Sale()
-//                {
-//                    Id = 2,
-//                    Date = DateTime.Now.Date.AddDays(-2),
-//                    CustomerId = CustomersList()[1].Id,
-//                    EmployeeId = EmployeeList()[1].Id,
-//                    ProductId = ProductList()[1].Id,
-//                    UnitPrice = 10m,
-//                    Quantity = 2
+//                new Card() {
+//                    Id=Guid.NewGuid(),
+//                    Code ="BG 1.2",
+//                    Name = "Chapter 1, Verse 2",
+//                    Description= "sanjaya uvaca    drstva tu pandavanikam    vyudham duryodhanas tada    acaryam upasangamya    raja vacanam abravit",
+//                    Synonmys= "pasya--behold; etam--this; pandu-putranam--of the sons of Pandu; acarya--O teacher; mahatim--great; camum--military force; vyudham--arranged; drupada-putrena--by the son of Drupada; tava--your; sisyena--disciple; dhi-mata--very intelligent.",
+//                    Meaning= "Sanjaya said: O King, after looking over the army gathered by the sons of Pandu, King Duryodhana went to his teacher and began to speak the following words:",
+//                    Chapter= 1,
+//                    Verse =2
 //                },
-
-//                new Sale()
-//                {
-//                    Id = 3,
-//                    Date = DateTime.Now.Date.AddDays(-1),
-//                    CustomerId = CustomersList()[2].Id,
-//                    EmployeeId = EmployeeList()[2].Id,
-//                    ProductId = ProductList()[2].Id,
-//                    UnitPrice = 15m,
-//                    Quantity = 3
-//                }
-//            );
-
+//                new Card() {
+//                    Id=Guid.NewGuid(),
+//                    Code ="BG 1.3",
+//                    Name = "Chapter 1, Verse 3" ,
+//                    Description= "pasyaitam pandu-putranam     acarya mahatim camum    vyudham drupada-putrena    tava sisyena dhimata",
+//                    Synonmys= "pasya--behold; etam--this; pandu-putranam--of the sons of Pandu;   acarya--O teacher; mahatim--great; camum--military force; vyudham--    arranged; drupada-putrena--by the son of Drupada; tava--your; sisyena--    disciple; dhi-mata--very intelligent.",
+//                    Meaning= "O my teacher, behold the great army of the sons of Pandu, so expertly    arranged by your intelligent disciple, the son of Drupada.",
+//                    Chapter= 1,
+//                    Verse =3
+//                },
+//            };
 //        }
+
+//        private static List<Group> GroupList()
+//        {
+//            return new List<Group>()
+//            {
+//                new Group() {Id=Guid.NewGuid(), Name= "Anger", Description= "Anger", IsActive= true},
+//                new Group() {Id=Guid.NewGuid(), Name= "Confusion", Description= "Confusion", IsActive= true},
+//                new Group() {Id=Guid.NewGuid(), Name= "Envy", Description= "Envy", IsActive= true}
+//            };
+//        }
+
+
+
 //    }
 //}
