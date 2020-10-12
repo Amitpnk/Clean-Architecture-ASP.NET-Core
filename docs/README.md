@@ -1,3 +1,5 @@
+![.NET Core](https://github.com/Amitpnk/Clean-Architecture-ASP.NET-Core/workflows/.NET%20Core/badge.svg)
+
 # Clean Architecture
 
 ## Status
