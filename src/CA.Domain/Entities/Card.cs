@@ -6,8 +6,8 @@ namespace CA.Domain.Entities
     public class Card : AggregateRoot<Guid>
     {
 
-        public string Code { get; set; }
-        public string Name { get; set; }
+        //public string Code { get; set; }
+        //public string Name { get; set; }
         public string Description { get; set; }
         public string Synonmys { get; set; }
         public string Meaning { get; set; }
