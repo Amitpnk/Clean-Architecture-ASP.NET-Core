@@ -29,9 +29,12 @@
     - MS SQL and Inmemory DB
     - DB Connectivity : Entityframework Core - Code First
 * Cloud server
-    - Azure
-* Feature
+    - Azure  (alternate is AWS)
+* Service
     - Web API (Restful service)
+    - gRPC
+    - Graphql
+* Feature
     - Dataseeding
     - Custom Exceptionn Handler
     - Automapper
@@ -53,9 +56,9 @@
     - JWT Authentication
 * Monitoring tool
     - Health check UI
-    - Kibana dashboard for monitoring
+    - Grafana dashboard (alternate is Kibana)
 * Testing
-    - TDD Aproach
+    - Testing Strategy using the testing pyramid
     - Unit testing (Nunit)        
     - Integration testing
 * CI/CD
@@ -69,6 +72,7 @@
 
 
 ## Give a Star! :star:
+
 If you like or are using this project to learn or start your solution, please give it a star. Thanks!
 
 ## Support This Project
