@@ -3,6 +3,7 @@ using CA.Domain.Contract;
 using CA.Persistance.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CA.Persistance.Repositories
 {
@@ -41,6 +42,12 @@ namespace CA.Persistance.Repositories
         public IQueryable<T> GetAll()
         {
             return _dbContext.Set<T>();
+        }
+
+        public Task<T> GetByIdAsync(TKey id)
+        {
+            //return _dbContext<T>.FindAsync(id);
+            return null;
         }
     }
 }
