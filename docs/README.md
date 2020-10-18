@@ -24,7 +24,6 @@
     - Framework: React-Redux boiler plate
     - MVC Core
     - Blazor
-    - MVC Razor
 * Database
     - MS SQL and Inmemory DB
     - DB Connectivity : Entityframework Core - Code First
