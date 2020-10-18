@@ -1,6 +1,4 @@
 using CA.Persistance;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;
@@ -25,9 +23,5 @@ namespace CA.Migrator
             services.AddPersistence(Configuration, configRoot);
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-
-        }
     }
 }

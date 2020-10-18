@@ -1,18 +1,17 @@
 ﻿using CA.Domain.Common;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace CA.Domain.Contract
 {
     public interface IGenericRepository<TEntity, TKey>
         where TEntity : AggregateRoot<TKey>
     {
-        IUnitOfWork UnitOfWork { get; }
-        Task<TEntity> GetByIdAsync(TKey id);
-        IQueryable<TEntity> GetAll();
 
-        void AddOrUpdate(TEntity entity);
-
-        void Delete(TEntity entity);
+        IEnumerable<TEntity> GetAll();
+        TEntity GetById(TKey id);
+        void Add(TEntity obj);
+        void Update(TEntity obj);
+        void Delete(TKey id);
+        bool Save();
     }
 }

@@ -10,20 +10,20 @@ using System.Threading.Tasks;
 
 namespace CA.Application.CardFeature.EventHandlers
 {
-    public class CreateCardCommandHandler : IRequestHandler<CreateCardCommand, CardViewModel>
+    public class UpdateCardCommandHandler : IRequestHandler<UpdateCardCommand, CardViewModel>
     {
         private readonly IGenericRepository<Card, Guid> _genericRepository;
         private readonly IMapper _mapper;
-        public CreateCardCommandHandler(IGenericRepository<Card, Guid> genericRepository, IMapper mapper)
+        public UpdateCardCommandHandler(IGenericRepository<Card, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
         }
-        public async Task<CardViewModel> Handle(CreateCardCommand request, CancellationToken cancellationToken)
+        public async Task<CardViewModel> Handle(UpdateCardCommand request, CancellationToken cancellationToken)
         {
             var entity = new Card
             {
-                Id = Guid.NewGuid(),
+                Id = request.Id,
                 Description = request.Description,
                 Synonmys = request.Synonmys,
                 Meaning = request.Meaning,
@@ -31,7 +31,7 @@ namespace CA.Application.CardFeature.EventHandlers
                 Verse = request.Verse
             };
 
-            _genericRepository.Add(entity);
+            _genericRepository.Update(entity);
             _genericRepository.Save();
 
             return _mapper.Map<CardViewModel>(entity);

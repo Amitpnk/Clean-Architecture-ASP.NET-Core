@@ -1,4 +1,7 @@
 using CA.Application;
+using CA.Domain.Contract;
+using CA.Persistance;
+using CA.Persistance.Repositories;
 //using CA.Application.Common.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,10 +19,13 @@ namespace CA.WebAPI
 {
     public class Startup
     {
+        private readonly IConfigurationRoot configRoot;
         public Startup(IConfiguration configuration)
         {
             Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
             Configuration = configuration;
+            IConfigurationBuilder builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory()).AddJsonFile("appsettings.json");
+            configRoot = builder.Build();
         }
 
         public IConfiguration Configuration { get; }
@@ -29,9 +35,9 @@ namespace CA.WebAPI
             services.AddControllers();//.AddNewtonsoftJson();
             services.AddApplication();
 
+            services.AddPersistence(Configuration, configRoot);
             //services.AddTransient<IDateService, DateService>();
-
-
+            services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
 
             services.AddSwaggerGen(setupAction =>
             {
@@ -59,6 +65,7 @@ namespace CA.WebAPI
                 var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
                 setupAction.IncludeXmlComments(xmlCommentsFullPath);
             });
+
 
             //services.AddScoped<IApplicationDbContext>(provider => provider.GetService<ApplicationDbContext>());
 

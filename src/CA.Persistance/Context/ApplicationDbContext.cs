@@ -1,15 +1,10 @@
-﻿using CA.Domain.Contract;
+﻿using CA.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using System.Data;
 
 namespace CA.Persistance.Context
 {
-    public class ApplicationDbContext : DbContext, IUnitOfWork
+    public class ApplicationDbContext : DbContext
     {
-        private IDbContextTransaction _dbContextTransaction;
-
-        // This constructor is used of runit testing
         public ApplicationDbContext()
         {
 
@@ -19,7 +14,9 @@ namespace CA.Persistance.Context
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
-        //public DbSet<Card> Cards { get; set; }
+        public DbSet<Card> Cards { get; set; }
+
+        public DbSet<Group> Groups { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -35,23 +32,12 @@ namespace CA.Persistance.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
             //Fluent API configurations 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+            modelBuilder.Seed();
 
-            //modelBuilder.Seed();
-
-        }
-
-
-        public void BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
-        {
-            _dbContextTransaction = Database.BeginTransaction(isolationLevel);
-        }
-
-        public void CommitTransaction()
-        {
-            _dbContextTransaction.Commit();
         }
     }
+
+
 }

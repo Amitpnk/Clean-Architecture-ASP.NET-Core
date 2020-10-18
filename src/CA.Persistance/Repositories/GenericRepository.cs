@@ -2,52 +2,52 @@
 using CA.Domain.Contract;
 using CA.Persistance.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CA.Persistance.Repositories
 {
-    public class GenericRepository<T, TKey> : IGenericRepository<T, TKey>
-        where T : AggregateRoot<TKey>
+    public class GenericRepository<TEntity, TKey> : IGenericRepository<TEntity, TKey>
+        where TEntity : AggregateRoot<TKey>
     {
         private readonly ApplicationDbContext _dbContext;
-        protected DbSet<T> DbSet => _dbContext.Set<T>();
-
-        public IUnitOfWork UnitOfWork
-        {
-            get
-            {
-                return _dbContext;
-            }
-        }
+        private readonly DbSet<TEntity> table;
 
         public GenericRepository(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
+            table = _dbContext.Set<TEntity>();
         }
 
-        public void AddOrUpdate(T entity)
+        public void Add(TEntity obj)
         {
-            if (entity.Id.Equals(default(TKey)))
-            {
-                DbSet.Add(entity);
-            }
+            table.Add(obj);
         }
 
-        public void Delete(T entity)
+        public void Delete(TKey id)
         {
-            DbSet.Remove(entity);
+            TEntity existing = table.Find(id);
+            table.Remove(existing);
         }
 
-        public IQueryable<T> GetAll()
+        public IEnumerable<TEntity> GetAll()
         {
-            return _dbContext.Set<T>();
+            return table.ToList();
         }
 
-        public Task<T> GetByIdAsync(TKey id)
+        public TEntity GetById(TKey id)
         {
-            //return _dbContext<T>.FindAsync(id);
-            return null;
+            return table.Find(id);
+        }
+
+        public bool Save()
+        {
+            return (_dbContext.SaveChanges() >= 0);
+        }
+
+        public void Update(TEntity obj)
+        {
+            table.Update(obj);
         }
     }
 }
