@@ -24,6 +24,7 @@ namespace CA.Application.GroupFeature.EventHandlers
             var entity = new Group
             {
                 Id = Guid.NewGuid(),
+                Name = request.Name,
                 Description = request.Description,
                 IsActive = request.IsActive
 

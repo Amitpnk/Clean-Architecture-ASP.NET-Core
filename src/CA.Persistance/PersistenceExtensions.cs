@@ -1,4 +1,5 @@
-﻿using CA.Domain.Contract;
+﻿using CA.Application.GroupFeature.Service;
+using CA.Domain.Contract;
 using CA.Persistance.Context;
 using CA.Persistance.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,8 @@ namespace CA.Persistance
                options.UseSqlServer(configuration.GetConnectionString("CleanArchConn") ?? configRoot["ConnectionStrings:CleanArchConn"]
             , b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
-            serviceCollection.AddScoped(typeof(IGenericRepositoryAsync<,>), typeof(GenericRepositoryAsync<,>));
+            serviceCollection.AddTransient(typeof(IGenericRepositoryAsync<,>), typeof(GenericRepositoryAsync<,>));
+            serviceCollection.AddTransient<IGroupRepositoryAsync, GroupRepositoryAsync>();
         }
     }
 }
