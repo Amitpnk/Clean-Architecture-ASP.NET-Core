@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using CA.Application.GroupFeature.Commands;
 using CA.Application.GroupFeature.ViewModel;
+using CA.CrossCuttingConcerns.Exceptions;
 using CA.Domain.Contract;
 using CA.Domain.Entities;
 using MediatR;
@@ -12,9 +13,9 @@ namespace CA.Application.GroupFeature.EventHandlers
 {
     public class UpdateGroupCommandHandler : IRequestHandler<UpdateGroupCommand, GroupViewModel>
     {
-        private readonly IGenericRepository<Group, Guid> _genericRepository;
+        private readonly IGenericRepositoryAsync<Group, Guid> _genericRepository;
         private readonly IMapper _mapper;
-        public UpdateGroupCommandHandler(IGenericRepository<Group, Guid> genericRepository, IMapper mapper)
+        public UpdateGroupCommandHandler(IGenericRepositoryAsync<Group, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -28,12 +29,16 @@ namespace CA.Application.GroupFeature.EventHandlers
                 Name = request.Name
             };
 
-            _genericRepository.Update(entity);
-            _genericRepository.Save();
+            var card = await _genericRepository.GetByIdAsync(request.Id);
+            if (card == null)
+            {
+                throw new NotFoundException(nameof(Group), request.Id);
+            }
+
+            await _genericRepository.UpdateAsync(entity);
+            _genericRepository.SaveChanges();
 
             return _mapper.Map<GroupViewModel>(entity);
         }
-
-
     }
 }

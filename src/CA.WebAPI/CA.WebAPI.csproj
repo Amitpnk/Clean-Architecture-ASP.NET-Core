@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CA.Application\CA.Application.csproj" />
+    <ProjectReference Include="..\CA.Infrastructure\CA.Infrastructure.csproj" />
     <ProjectReference Include="..\CA.Persistance\CA.Persistance.csproj" />
   </ItemGroup>
 

@@ -15,7 +15,7 @@ namespace CA.Persistance
                options.UseSqlServer(configuration.GetConnectionString("CleanArchConn") ?? configRoot["ConnectionStrings:CleanArchConn"]
             , b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
 
-            serviceCollection.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
+            serviceCollection.AddScoped(typeof(IGenericRepositoryAsync<,>), typeof(GenericRepositoryAsync<,>));
         }
     }
 }

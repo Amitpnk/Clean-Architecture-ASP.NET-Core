@@ -1,8 +1,12 @@
-﻿using System;
+﻿using FluentValidation.Results;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace CA.CrossCuttingConcerns.Exceptions
 {
+    [Serializable]
     public class ValidationException : Exception
     {
         public ValidationException()
@@ -10,29 +14,33 @@ namespace CA.CrossCuttingConcerns.Exceptions
         {
             Failures = new Dictionary<string, string[]>();
         }
-
         public ValidationException(string message) : base(message)
         {
         }
 
-        //public ValidationException(List<ValidationFailure> failures)
-        //    : this()
-        //{
-        //    var propertyNames = failures
-        //        .Select(e => e.PropertyName)
-        //        .Distinct();
+        public ValidationException(List<ValidationFailure> failures)
+            : this()
+        {
+            var propertyNames = failures
+                .Select(e => e.PropertyName)
+                .Distinct();
 
-        //    foreach (var propertyName in propertyNames)
-        //    {
-        //        var propertyFailures = failures
-        //            .Where(e => e.PropertyName == propertyName)
-        //            .Select(e => e.ErrorMessage)
-        //            .ToArray();
+            foreach (var propertyName in propertyNames)
+            {
+                var propertyFailures = failures
+                    .Where(e => e.PropertyName == propertyName)
+                    .Select(e => e.ErrorMessage)
+                    .ToArray();
 
-        //        Failures.Add(propertyName, propertyFailures);
-        //    }
-        //}
+                Failures.Add(propertyName, propertyFailures);
+            }
+        }
 
         public IDictionary<string, string[]> Failures { get; }
+
+        protected ValidationException(SerializationInfo info, StreamingContext context)
+       : base(info, context)
+        {
+        }
     }
 }

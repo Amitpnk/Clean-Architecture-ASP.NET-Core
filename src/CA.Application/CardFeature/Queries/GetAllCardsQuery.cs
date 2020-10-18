@@ -12,6 +12,7 @@ namespace CA.Application.CardFeature.Queries
 {
     public class GetAllCardsQuery : IRequest<IEnumerable<CardViewModel>>
     {
+        // TODO
         //    public int PageNumber { get; set; }
         //    public int PageSize { get; set; }
     }
@@ -19,10 +20,10 @@ namespace CA.Application.CardFeature.Queries
     public class GetAllCardHandler : IRequestHandler<GetAllCardsQuery, IEnumerable<CardViewModel>>
     {
 
-        private readonly IGenericRepository<Card, Guid> _genericRepository;
+        private readonly IGenericRepositoryAsync<Card, Guid> _genericRepository;
         private readonly IMapper _mapper;
 
-        public GetAllCardHandler(IGenericRepository<Card, Guid> genericRepository, IMapper mapper)
+        public GetAllCardHandler(IGenericRepositoryAsync<Card, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -30,7 +31,7 @@ namespace CA.Application.CardFeature.Queries
 
         public async Task<IEnumerable<CardViewModel>> Handle(GetAllCardsQuery request, CancellationToken cancellationToken)
         {
-            var cardsList = _genericRepository.GetAll();  //.ToListAsync(cancellationToken);
+            var cardsList = await _genericRepository.GetAllAsync();
             var cardsListVm = _mapper.Map<IEnumerable<CardViewModel>>(cardsList);
             return cardsListVm;
         }

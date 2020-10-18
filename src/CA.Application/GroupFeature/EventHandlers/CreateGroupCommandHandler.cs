@@ -12,9 +12,9 @@ namespace CA.Application.GroupFeature.EventHandlers
 {
     public class CreateGroupCommandHandler : IRequestHandler<CreateGroupCommand, GroupViewModel>
     {
-        private readonly IGenericRepository<Group, Guid> _genericRepository;
+        private readonly IGenericRepositoryAsync<Group, Guid> _genericRepository;
         private readonly IMapper _mapper;
-        public CreateGroupCommandHandler(IGenericRepository<Group, Guid> genericRepository, IMapper mapper)
+        public CreateGroupCommandHandler(IGenericRepositoryAsync<Group, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -29,12 +29,10 @@ namespace CA.Application.GroupFeature.EventHandlers
 
             };
 
-            _genericRepository.Add(entity);
-            _genericRepository.Save();
+            await _genericRepository.AddAsync(entity);
+            _genericRepository.SaveChanges();
 
             return _mapper.Map<GroupViewModel>(entity);
         }
-
-
     }
 }

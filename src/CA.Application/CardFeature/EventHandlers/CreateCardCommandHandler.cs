@@ -12,9 +12,9 @@ namespace CA.Application.CardFeature.EventHandlers
 {
     public class CreateCardCommandHandler : IRequestHandler<CreateCardCommand, CardViewModel>
     {
-        private readonly IGenericRepository<Card, Guid> _genericRepository;
+        private readonly IGenericRepositoryAsync<Card, Guid> _genericRepository;
         private readonly IMapper _mapper;
-        public CreateCardCommandHandler(IGenericRepository<Card, Guid> genericRepository, IMapper mapper)
+        public CreateCardCommandHandler(IGenericRepositoryAsync<Card, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -31,8 +31,8 @@ namespace CA.Application.CardFeature.EventHandlers
                 Verse = request.Verse
             };
 
-            _genericRepository.Add(entity);
-            _genericRepository.Save();
+            await _genericRepository.AddAsync(entity);
+            _genericRepository.SaveChanges();
 
             return _mapper.Map<CardViewModel>(entity);
         }

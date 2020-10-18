@@ -19,10 +19,10 @@ namespace CA.Application.GroupFeature.Queries
     public class GetAllGroupHandler : IRequestHandler<GetAllGroupsQuery, IEnumerable<GroupViewModel>>
     {
 
-        private readonly IGenericRepository<Group, Guid> _genericRepository;
+        private readonly IGenericRepositoryAsync<Group, Guid> _genericRepository;
         private readonly IMapper _mapper;
 
-        public GetAllGroupHandler(IGenericRepository<Group, Guid> genericRepository, IMapper mapper)
+        public GetAllGroupHandler(IGenericRepositoryAsync<Group, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -30,11 +30,9 @@ namespace CA.Application.GroupFeature.Queries
 
         public async Task<IEnumerable<GroupViewModel>> Handle(GetAllGroupsQuery request, CancellationToken cancellationToken)
         {
-            var GroupsList = _genericRepository.GetAll();  //.ToListAsync(cancellationToken);
+            var GroupsList = await _genericRepository.GetAllAsync();
             var GroupsListVm = _mapper.Map<IEnumerable<GroupViewModel>>(GroupsList);
             return GroupsListVm;
         }
-
-
     }
 }

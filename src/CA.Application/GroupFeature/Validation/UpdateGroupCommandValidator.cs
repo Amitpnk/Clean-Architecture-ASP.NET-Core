@@ -15,7 +15,7 @@ namespace CA.Application.GroupFeature.Validation
 
             RuleFor(x => x.Description).NotEmpty()
                 .NotEmpty().WithMessage("{PropertyName} is required.");
-        
+
         }
     }
 }

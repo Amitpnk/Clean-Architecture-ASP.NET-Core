@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CA.Application.GroupFeature.Commands;
+using CA.CrossCuttingConcerns.Exceptions;
 using CA.Domain.Contract;
 using CA.Domain.Entities;
 using MediatR;
@@ -11,21 +12,26 @@ namespace CA.Application.GroupFeature.EventHandlers
 {
     public class DeleteGroupCommandHandler : IRequestHandler<DeleteGroupCommand>
     {
-        private readonly IGenericRepository<Group, Guid> _genericRepository;
+        private readonly IGenericRepositoryAsync<Group, Guid> _genericRepository;
         private readonly IMapper _mapper;
-        public DeleteGroupCommandHandler(IGenericRepository<Group, Guid> genericRepository, IMapper mapper)
+        public DeleteGroupCommandHandler(IGenericRepositoryAsync<Group, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
         }
 
-        // TODO
-        Task<Unit> IRequestHandler<DeleteGroupCommand, Unit>.Handle(DeleteGroupCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DeleteGroupCommand request, CancellationToken cancellationToken)
         {
-            _genericRepository.Delete(request.GroupId);
-            _genericRepository.Save();
-            // TODO 
-            return null;
+            var group = await _genericRepository.GetByIdAsync(request.GroupId);
+            if (group == null)
+            {
+                throw new NotFoundException(nameof(Card), request.GroupId);
+            }
+
+            await _genericRepository.DeleteAsync(request.GroupId);
+            _genericRepository.SaveChanges();
+
+            return Unit.Value;
         }
     }
 }

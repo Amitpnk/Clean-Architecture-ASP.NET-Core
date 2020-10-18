@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using CA.Application.GroupFeature.ViewModel;
+using CA.CrossCuttingConcerns.Exceptions;
 using CA.Domain.Contract;
 using CA.Domain.Entities;
 using MediatR;
@@ -20,10 +21,10 @@ namespace CA.Application.GroupFeature.Queries
 
     public class GetGroupByIdHandler : IRequestHandler<GetGroupByIdQuery, GroupViewModel>
     {
-        private readonly IGenericRepository<Group, Guid> _genericRepository;
+        private readonly IGenericRepositoryAsync<Group, Guid> _genericRepository;
         private readonly IMapper _mapper;
 
-        public GetGroupByIdHandler(IGenericRepository<Group, Guid> genericRepository, IMapper mapper)
+        public GetGroupByIdHandler(IGenericRepositoryAsync<Group, Guid> genericRepository, IMapper mapper)
         {
             _genericRepository = genericRepository;
             _mapper = mapper;
@@ -31,10 +32,10 @@ namespace CA.Application.GroupFeature.Queries
 
         public async Task<GroupViewModel> Handle(GetGroupByIdQuery request, CancellationToken cancellationToken)
         {
-            var entity = _genericRepository.GetById(request.GroupId);
+            var entity = await _genericRepository.GetByIdAsync(request.GroupId);
             if (entity == null)
             {
-                //throw new NotFoundException(nameof(Group), request.Id);
+                throw new NotFoundException(nameof(Group), request.GroupId);
             }
             return _mapper.Map<GroupViewModel>(entity);
         }

@@ -1,8 +1,6 @@
 using CA.Application;
-using CA.Domain.Contract;
+using CA.Infrastructure;
 using CA.Persistance;
-using CA.Persistance.Repositories;
-//using CA.Application.Common.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -36,8 +34,6 @@ namespace CA.WebAPI
             services.AddApplication();
 
             services.AddPersistence(Configuration, configRoot);
-            //services.AddTransient<IDateService, DateService>();
-            services.AddScoped(typeof(IGenericRepository<,>), typeof(GenericRepository<,>));
 
             services.AddSwaggerGen(setupAction =>
             {
@@ -66,9 +62,6 @@ namespace CA.WebAPI
                 setupAction.IncludeXmlComments(xmlCommentsFullPath);
             });
 
-
-            //services.AddScoped<IApplicationDbContext>(provider => provider.GetService<ApplicationDbContext>());
-
             services.AddApiVersioning(config =>
             {
                 config.DefaultApiVersion = new ApiVersion(1, 0);
@@ -88,7 +81,7 @@ namespace CA.WebAPI
 
             log.AddSerilog();
 
-            //app.UseMiddleware<CustomExceptionHandlerMiddleware>();
+            app.UseExceptionHandlerMiddleware();
 
             app.UseSwagger();
 
