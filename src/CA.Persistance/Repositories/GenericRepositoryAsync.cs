@@ -50,7 +50,7 @@ namespace CA.Persistance.Repositories
 
         public async Task UpdateAsync(TEntity obj)
         {
-            table.Update(obj);
+           await Task.Run(()=> table.Update(obj));
         }
     }
 }

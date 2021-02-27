@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 namespace CA.WebAPI.Card.v1
 {
-
-    [Route("api/v{version:apiVersion}/card")]
     [ApiVersion("1.0")]
     public class CardController : BaseController
     {

@@ -9,8 +9,6 @@ using System.Threading.Tasks;
 
 namespace CA.WebAPI.Group.v1
 {
-
-    [Route("api/v{version:apiVersion}/group")]
     [ApiVersion("1.0")]
     public class GroupController : BaseController
     {

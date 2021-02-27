@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CA.Persistance.Configurations
 {
-
     public class GroupConfiguration : IEntityTypeConfiguration<Group>
     {
         public void Configure(EntityTypeBuilder<Group> builder)

@@ -18,7 +18,6 @@ namespace CA.Persistance.Context
 
         public DbSet<Group> Groups { get; set; }
 
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)

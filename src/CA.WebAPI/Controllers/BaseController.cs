@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace CA.Controllers
 {
     [ApiController]
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiVersion("1.0")]
     public class BaseController : ControllerBase
     {
         private IMediator _mediator;
