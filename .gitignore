@@ -354,3 +354,7 @@ MigrationBackup/
 
 # Identity Server 4 tempkey
 tempkey.jwk
+
+# documentation
+docs/TODO/*
+docs/bg/*
