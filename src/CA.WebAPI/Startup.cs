@@ -56,10 +56,7 @@ namespace CA.WebAPI
                             Url = new Uri("https://opensource.org/licenses/MIT")
                         }
                     });
-
-                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlCommentsFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
-                setupAction.IncludeXmlComments(xmlCommentsFullPath);
+ 
             });
 
             services.AddApiVersioning(config =>
