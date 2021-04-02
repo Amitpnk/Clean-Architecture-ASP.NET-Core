@@ -55,7 +55,9 @@ This project provides complete solution which is built on Clean Architecture wit
 
 * Architecture
     - Clean architecture
-    - Screaming architecture
+    - (Includes)
+        - Screaming architecture
+        - Onion archhitecture
 * Design Pattern
     - CQRS design pattern
     - Decorator design pattern
