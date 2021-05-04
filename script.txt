@@ -1,0 +1,13 @@
+add-migration Identity-commit -Context IdentityDbContext -o Migrations/Identity
+add-migration Initial-commit-Application -Context ApplicationDbContext -o Migrations/Application
+update-database -Context IdentityDbContext 
+update-database -Context ApplicationDbContext 
+
+
+dotnet tool install --global dotnet-ef --version="5.0.5"
+
+--incase if already exist
+dotnet tool update --global dotnet-ef --version="5.0.5"
+
+dotnet ef database update --startup-project ./src/CleanArch.Persistence/CleanArch.Persistence.csproj -c IdentityDbContext -o Migrations/Identity
+dotnet ef database update --startup-project ./src/CleanArch.Api/CleanArch.Api.csproj -c ApplicationDbContext
