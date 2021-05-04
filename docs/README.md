@@ -53,68 +53,80 @@ This project provides complete solution which is built on Clean Architecture wit
 
 ## Technology stack
 
-* Architecture
-    - Clean architecture
-    - (Includes)
-        - Screaming architecture
-        - Onion archhitecture
-* Design Pattern
-    - CQRS design pattern
-    - Decorator design pattern
-    - Mediator design pattern
-    - Repository design pattern
-    - Unit of work 
-* Backend
-    - Language: C#
-    - Framework: dotnet core 5, ASP.NET Core
-* UI
-    - Framework: React-Redux boiler plate
-    - MVC Core
-    - Blazor
-* Database
-    - MS SQL and Inmemory DB
-    - DB Connectivity : Entityframework Core - Code First
-* Cloud server
-    - Azure  (alternate is AWS)
-* Service
-    - Web API (Restful service)
-    - gRPC
-    - Graphql
-* Feature
-    - Dataseeding
-    - Custom Exceptionn Handler
-    - Automapper
-    - Fluent validation
-    - Serilog
-    - Swagger UI
-    - Healthcheck UI
-    - Advanced Pagination
-    - InMemory caching
-    - API Versioning
-    - User Auditing
-    - Mailkit (Mail service)
-    - Hangfire
-    - Miniprofiler
-    - Enabling CORS
-* Authentication
-    - Identity server 4
-    - OAuth2
-    - JWT Authentication
-* Monitoring tool
-    - Health check UI
-    - Grafana dashboard (alternate is Kibana)
-* Testing
-    - Testing Strategy using the testing pyramid
-    - Unit testing (Nunit)        
-    - Integration testing
-* CI/CD
-    - Task runner: .Net core and CircleCI
-    - Coverage report: Sonarcloud.io
-    - Quality report: Codacy
-    - Docker image and Kubernate
-    - Cloud server: Azure for cloud
-* Documentation
-    - Conventional commit - commit and commit message    
+Architecture Pattern
+
+- [x] Clean architecture
+- [x] (Includes)
+    - [x] Screaming architecture-[Functional organisation design](http://blog.cleancoder.com/uncle-bob/2011/09/30/Screaming-Architecture.html)
+    - [x] Onion archhitecture
+
+Design Pattern
+- [x] CQRS design pattern
+- [ ] Decorator design pattern
+- [x] Mediator design pattern
+- [x] Repository design pattern
+- [x] Unit of work 
+- [x] Factory design pattern
+ 
+Backend
+- [x] Language: C#
+- [x] Framework: dotnet core 5, ASP.NET Core
+
+UI
+- [ ] Blazor
+
+Database
+- [x] MS SQL and Inmemory DB
+- [x] DB Connectivity : Entityframework Core - Code First
+
+Cloud server
+- [x] Azure (deployment script)
+
+Service
+- [x] Web API (Restful service)
+- [ ] gRPC
+- [ ] Graphql
+
+Feature
+- [x] Dataseeding
+- [x] Custom Exceptionn Handler
+- [x] Automapper
+- [x] Fluent validation
+- [x] Serilog
+- [x] Swagger UI
+- [x] Advanced Pagination
+- [x] API Versioning
+- [ ] User Auditing
+- [x] Mailkit (Mail service)
+- [ ] Hangfire
+- [ ] Miniprofiler
+- [x] Enabling CORS with CustomPolicy
+
+Authentication
+- [x] JWT Authentication
+
+Monitoring tool
+- [x] Health check UI
+- [ ] Kibana dashboard  
+
+Testing
+- [x] Unit testing (Nunit)
+- [x] Integration testing
+
+Caching
+- [ ] Inmemory Caching
+- [ ] Distributed Redis Caching
+
+CI/CD
+- [ ] Task runner: .Net core and CircleCI
+- [ ] Coverage report: Sonarcloud.io
+- [ ] Quality report: Codacy
+- [ ] Docker image and Kubernate
+- [ ] Cloud server: Azure for cloud
+
+Documentation
+- [x] Conventional commit - commit and commit message    
+- [x] Docsify
 
 ## Licence Used
 
