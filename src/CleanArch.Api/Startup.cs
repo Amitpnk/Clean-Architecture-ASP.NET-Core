@@ -47,6 +47,10 @@ namespace CleanArch.Api
 
             services.AddApplicationServices();
 
+            services.AddScoped<ILoggedInUserService, LoggedInUserService>();
+
+            services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+
             services.AddInfrastructureServices(Configuration);
 
             services.AddPersistenceServices(Configuration);

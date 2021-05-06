@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CleanArch.Application\CleanArch.Application.csproj" />
+    <ProjectReference Include="..\CleanArch.CrossCuttingConcerns\CleanArch.CrossCuttingConcerns.csproj" />
   </ItemGroup>
   
 </Project>

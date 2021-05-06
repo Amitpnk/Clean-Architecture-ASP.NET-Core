@@ -22,12 +22,6 @@ namespace CleanArch.Persistence
         {
             services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
 
-            services.AddDbContext<IdentityDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("CleanArchIdentityConnectionString"),
-                b => b.MigrationsAssembly(typeof(IdentityDbContext).Assembly.FullName)));
-
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<IdentityDbContext>().AddDefaultTokenProviders();
-
             services.AddTransient<IAuthenticationService, AuthenticationService>();
 
             services.AddAuthentication(options =>

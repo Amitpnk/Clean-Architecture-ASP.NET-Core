@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.Context
 {
-    public class IdentityDbContext : IdentityDbContext<ApplicationUser>
+    public class IdentityContext : IdentityDbContext<ApplicationUser>
     {
-        public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
+        public IdentityContext(DbContextOptions options) : base(options)
         {
         }
 
@@ -17,39 +17,39 @@ namespace CleanArch.Persistence.Context
             base.OnModelCreating(builder);
 
             #region Custom Identity table names
-            builder.HasDefaultSchema("Identity");
+            //builder.HasDefaultSchema("Identity");
             builder.Entity<ApplicationUser>(entity =>
             {
-                entity.ToTable(name: "User");
+                entity.ToTable("User", "Identity");
             });
 
             builder.Entity<IdentityRole>(entity =>
             {
-                entity.ToTable(name: "Role");
+                entity.ToTable("Role", "Identity");
             });
             builder.Entity<IdentityUserRole<string>>(entity =>
             {
-                entity.ToTable("UserRoles");
+                entity.ToTable("UserRoles", "Identity");
             });
 
             builder.Entity<IdentityUserClaim<string>>(entity =>
             {
-                entity.ToTable("UserClaims");
+                entity.ToTable("UserClaims", "Identity");
             });
 
             builder.Entity<IdentityUserLogin<string>>(entity =>
             {
-                entity.ToTable("UserLogins");
+                entity.ToTable("UserLogins", "Identity");
             });
 
             builder.Entity<IdentityRoleClaim<string>>(entity =>
             {
-                entity.ToTable("RoleClaims");
+                entity.ToTable("RoleClaims", "Identity");
             });
 
             builder.Entity<IdentityUserToken<string>>(entity =>
             {
-                entity.ToTable("UserTokens");
+                entity.ToTable("UserTokens", "Identity");
             });
             #endregion
 
