@@ -7,15 +7,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1EDC6AC8-C66
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6F7012B1-D2E2-4134-A683-942F6E6D2D17}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Application", "src\CleanArch.Application\CleanArch.Application.csproj", "{1565505F-C36B-4BB8-835E-4938250849EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Application", "CleanArch.Application\CleanArch.Application.csproj", "{1565505F-C36B-4BB8-835E-4938250849EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Domain", "src\CleanArch.Domain\CleanArch.Domain.csproj", "{49CADDA9-F61A-4EBC-89CE-762E2244B1B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Domain", "CleanArch.Domain\CleanArch.Domain.csproj", "{49CADDA9-F61A-4EBC-89CE-762E2244B1B0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Persistence", "src\CleanArch.Persistence\CleanArch.Persistence.csproj", "{878A3809-7F21-4694-9250-9395214E6006}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Persistence", "CleanArch.Persistence\CleanArch.Persistence.csproj", "{878A3809-7F21-4694-9250-9395214E6006}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Infrastructure", "src\CleanArch.Infrastructure\CleanArch.Infrastructure.csproj", "{5939699C-CD8B-42E0-BDF0-9CBA2698400E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Infrastructure", "CleanArch.Infrastructure\CleanArch.Infrastructure.csproj", "{5939699C-CD8B-42E0-BDF0-9CBA2698400E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Api", "src\CleanArch.Api\CleanArch.Api.csproj", "{2DB8FFD3-B359-4D2D-AD82-D68401087796}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CleanArch.Api", "CleanArch.Api\CleanArch.Api.csproj", "{2DB8FFD3-B359-4D2D-AD82-D68401087796}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
