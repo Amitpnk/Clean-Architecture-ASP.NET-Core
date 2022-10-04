@@ -4,6 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Version>1.0.0</Version>
+    <Authors>Amit Naik</Authors>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
