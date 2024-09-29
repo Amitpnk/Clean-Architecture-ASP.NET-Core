@@ -21,6 +21,10 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using System;
 using System.Collections.Generic;
+using CleanArch.CrossCuttingConcerns.Identity;
+using CleanArch.CrossCuttingConcerns.OS;
+using CleanArch.Infrastructure.Identity;
+using CleanArch.Infrastructure.OS;
 
 namespace CleanArch.Api
 {
