@@ -90,7 +90,7 @@ Service
 Feature
 - [x] Dataseeding
 - [x] Custom Exceptionn Handler
-- [x] Automapper
+- [x] Automapper / Mapster
 - [x] Fluent validation
 - [x] Serilog
 - [x] Swagger UI
