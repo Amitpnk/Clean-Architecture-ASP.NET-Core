@@ -1,14 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CleanArch.CrossCuttingConcerns.Identity
+namespace CleanArch.CrossCuttingConcerns.Identity;
+
+public interface ILoggedInUserService
 {
-    public interface ILoggedInUserService
-    {
-        bool IsAuthenticated { get; }
-        string UserId { get;  }
-    }
+    bool IsAuthenticated { get; }
+    string UserId { get; }
 }

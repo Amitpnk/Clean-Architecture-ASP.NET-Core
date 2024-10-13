@@ -1,12 +1,11 @@
-﻿using System;
+using System;
 
-namespace CleanArch.Application.Exceptions
+namespace CleanArch.Application.Exceptions;
+
+public class NotFoundException : ApplicationException
 {
-    public class NotFoundException : ApplicationException
+    public NotFoundException(string name, object key)
+        : base($"{name} ({key}) is not found")
     {
-        public NotFoundException(string name, object key)
-            : base($"{name} ({key}) is not found")
-        {
-        }
     }
 }

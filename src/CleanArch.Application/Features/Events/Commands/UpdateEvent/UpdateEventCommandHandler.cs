@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Application.Exceptions;
 using CleanArch.Domain.Entities;
@@ -6,40 +6,39 @@ using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CleanArch.Application.Features.Events.Commands.UpdateEvent
+namespace CleanArch.Application.Features.Events.Commands.UpdateEvent;
+
+public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand>
 {
-    public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand>
+    private readonly IGenericRepositoryAsync<Event> _eventRepository;
+    private readonly IMapper _mapper;
+
+    public UpdateEventCommandHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
     {
-        private readonly IGenericRepositoryAsync<Event> _eventRepository;
-        private readonly IMapper _mapper;
+        _mapper = mapper;
+        _eventRepository = eventRepository;
+    }
 
-        public UpdateEventCommandHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
+    public async Task<Unit> Handle(UpdateEventCommand request, CancellationToken cancellationToken)
+    {
+
+        var eventToUpdate = await _eventRepository.GetByIdAsync(request.EventId);
+
+        if (eventToUpdate == null)
         {
-            _mapper = mapper;
-            _eventRepository = eventRepository;
+            throw new NotFoundException(nameof(Event), request.EventId);
         }
 
-        public async Task<Unit> Handle(UpdateEventCommand request, CancellationToken cancellationToken)
-        {
+        var validator = new UpdateEventCommandValidator();
+        var validationResult = await validator.ValidateAsync(request);
 
-            var eventToUpdate = await _eventRepository.GetByIdAsync(request.EventId);
+        if (validationResult.Errors.Count > 0)
+            throw new ValidationException(validationResult);
 
-            if (eventToUpdate == null)
-            {
-                throw new NotFoundException(nameof(Event), request.EventId);
-            }
+        _mapper.Map(request, eventToUpdate, typeof(UpdateEventCommand), typeof(Event));
 
-            var validator = new UpdateEventCommandValidator();
-            var validationResult = await validator.ValidateAsync(request);
+        await _eventRepository.UpdateAsync(eventToUpdate);
 
-            if (validationResult.Errors.Count > 0)
-                throw new ValidationException(validationResult);
-
-            _mapper.Map(request, eventToUpdate, typeof(UpdateEventCommand), typeof(Event));
-
-            await _eventRepository.UpdateAsync(eventToUpdate);
-
-            return Unit.Value;
-        }
+        return Unit.Value;
     }
 }

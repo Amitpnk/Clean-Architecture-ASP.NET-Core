@@ -1,14 +1,14 @@
-﻿using CleanArch.Domain.Entities;
+using CleanArch.Domain.Entities;
 using CleanArch.Domain.Enum;
 using System.Collections.Generic;
 
-namespace CleanArch.Persistence.Context.Seeds
+namespace CleanArch.Persistence.Context.Seeds;
+
+public static class DefaultUser
 {
-    public static class DefaultUser
+    public static List<ApplicationUser> IdentityBasicUserList()
     {
-        public static List<ApplicationUser> IdentityBasicUserList()
-        {
-            return new List<ApplicationUser>()
+        return new List<ApplicationUser>()
             {
                 new ApplicationUser
                 {
@@ -39,6 +39,5 @@ namespace CleanArch.Persistence.Context.Seeds
                     NormalizedUserName="BASICUSER"
                 },
             };
-        }
     }
 }

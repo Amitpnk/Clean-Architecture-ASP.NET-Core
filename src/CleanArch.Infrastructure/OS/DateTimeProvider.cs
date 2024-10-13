@@ -1,20 +1,19 @@
-﻿using CleanArch.CrossCuttingConcerns.OS;
+using CleanArch.CrossCuttingConcerns.OS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CleanArch.Infrastructure.OS
+namespace CleanArch.Infrastructure.OS;
+
+public class DateTimeProvider : IDateTimeProvider
 {
-    public class DateTimeProvider: IDateTimeProvider
-    {
-        public DateTime Now => DateTime.Now;
+    public DateTime Now => DateTime.Now;
 
-        public DateTime UtcNow => DateTime.UtcNow;
+    public DateTime UtcNow => DateTime.UtcNow;
 
-        public DateTimeOffset OffsetNow => DateTimeOffset.Now;
+    public DateTimeOffset OffsetNow => DateTimeOffset.Now;
 
-        public DateTimeOffset OffsetUtcNow => DateTimeOffset.UtcNow;
-    }
+    public DateTimeOffset OffsetUtcNow => DateTimeOffset.UtcNow;
 }

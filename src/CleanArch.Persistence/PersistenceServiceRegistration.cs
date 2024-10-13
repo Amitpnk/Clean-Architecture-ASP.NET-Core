@@ -1,25 +1,24 @@
-﻿using CleanArch.Application.Contracts.Persistence;
+using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Persistence.Context;
 using CleanArch.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace CleanArch.Persistence
+namespace CleanArch.Persistence;
+
+public static class PersistenceServiceRegistration
 {
-    public static class PersistenceServiceRegistration
+    public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration.GetConnectionString("CleanArchConnectionString")));
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("CleanArchConnectionString")));
 
-            services.AddScoped(typeof(IGenericRepositoryAsync<>), typeof(GenericRepository<>));
+        services.AddScoped(typeof(IGenericRepositoryAsync<>), typeof(GenericRepository<>));
 
-            services.AddScoped<ICategoryRepository, CategoryRepository>();
-            services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
 
-            return services;
-        }
+        return services;
     }
 }

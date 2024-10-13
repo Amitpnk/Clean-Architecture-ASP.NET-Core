@@ -1,9 +1,8 @@
-﻿using MediatR;
+using MediatR;
 
-namespace CleanArch.Application.Features.Events.Queries.GetEventsExport
+namespace CleanArch.Application.Features.Events.Queries.GetEventsExport;
+
+public class GetEventsExportQuery : IRequest<EventExportFileVm>
 {
-    public class GetEventsExportQuery : IRequest<EventExportFileVm>
-    {
 
-    }
 }

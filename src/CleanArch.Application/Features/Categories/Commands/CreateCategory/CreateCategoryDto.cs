@@ -1,10 +1,9 @@
-﻿using System;
+using System;
 
-namespace CleanArch.Application.Features.Categories.Commands.CreateCategory
+namespace CleanArch.Application.Features.Categories.Commands.CreateCategory;
+
+public class CreateCategoryDto
 {
-    public class CreateCategoryDto
-    {
-        public Guid CategoryId { get; set; }
-        public string Name { get; set; }
-    }
+    public Guid CategoryId { get; set; }
+    public string Name { get; set; }
 }

@@ -1,10 +1,9 @@
-﻿using CleanArch.Domain.Services.Mail;
+using CleanArch.Domain.Services.Mail;
 using System.Threading.Tasks;
 
-namespace CleanArch.Application.Contracts.Infrastructure
+namespace CleanArch.Application.Contracts.Infrastructure;
+
+public interface IEmailService
 {
-    public interface IEmailService
-    {
-        Task SendEmailAsync(MailRequest mailRequest);
-    }
+    Task SendEmailAsync(MailRequest mailRequest);
 }

@@ -1,14 +1,14 @@
-﻿using CleanArch.Domain.Enum;
+using CleanArch.Domain.Enum;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
-namespace CleanArch.Persistence.Context.Seeds
+namespace CleanArch.Persistence.Context.Seeds;
+
+public static class DefaultRoles
 {
-    public static class DefaultRoles
+    public static List<IdentityRole> IdentityRoleList()
     {
-        public static List<IdentityRole> IdentityRoleList()
-        {
-            return new List<IdentityRole>()
+        return new List<IdentityRole>()
             {
                 new IdentityRole
                 {
@@ -35,6 +35,5 @@ namespace CleanArch.Persistence.Context.Seeds
                     NormalizedName = Roles.Basic.ToString()
                 }
             };
-        }
     }
 }

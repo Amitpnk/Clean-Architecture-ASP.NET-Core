@@ -1,14 +1,14 @@
-﻿using CleanArch.Domain.Enum;
+using CleanArch.Domain.Enum;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
-namespace CleanArch.Persistence.Context.Seeds
+namespace CleanArch.Persistence.Context.Seeds;
+
+public static class MappingUserRole
 {
-    public static class MappingUserRole
+    public static List<IdentityUserRole<string>> IdentityUserRoleList()
     {
-        public static List<IdentityUserRole<string>> IdentityUserRoleList()
-        {
-            return new List<IdentityUserRole<string>>()
+        return new List<IdentityUserRole<string>>()
             {
                 new IdentityUserRole<string>
                 {
@@ -36,6 +36,5 @@ namespace CleanArch.Persistence.Context.Seeds
                     UserId = Constants.SuperAdminUser
                 }
             };
-        }
     }
 }

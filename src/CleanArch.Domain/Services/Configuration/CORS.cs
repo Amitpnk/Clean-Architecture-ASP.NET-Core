@@ -1,8 +1,7 @@
-﻿namespace CleanArch.Domain.Services.Configuration
+namespace CleanArch.Domain.Services.Configuration;
+
+public class CORS
 {
-    public class CORS
-    {
-        public bool AllowAnyOrigin { get; set; }
-        public string[] AllowedOrigins { get; set; }
-    }
+    public bool AllowAnyOrigin { get; set; }
+    public string[] AllowedOrigins { get; set; }
 }

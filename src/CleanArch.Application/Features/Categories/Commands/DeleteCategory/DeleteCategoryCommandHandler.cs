@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Application.Exceptions;
 using CleanArch.Domain.Entities;
@@ -6,31 +6,30 @@ using MediatR;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CleanArch.Application.Features.Categories.Commands.DeleteCategory
+namespace CleanArch.Application.Features.Categories.Commands.DeleteCategory;
+
+public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand>
 {
-    public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand>
+    private readonly IGenericRepositoryAsync<Category> _categoryRepository;
+    private readonly IMapper _mapper;
+
+    public DeleteCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
     {
-        private readonly IGenericRepositoryAsync<Category> _categoryRepository;
-        private readonly IMapper _mapper;
+        _mapper = mapper;
+        _categoryRepository = categoryRepository;
+    }
 
-        public DeleteCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
+    public async Task<Unit> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
+    {
+        var categoryToDelete = await _categoryRepository.GetByIdAsync(request.CategoryId);
+
+        if (categoryToDelete == null)
         {
-            _mapper = mapper;
-            _categoryRepository = categoryRepository;
+            throw new NotFoundException(nameof(Category), request.CategoryId);
         }
 
-        public async Task<Unit> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
-        {
-            var categoryToDelete = await _categoryRepository.GetByIdAsync(request.CategoryId);
+        await _categoryRepository.DeleteAsync(categoryToDelete);
 
-            if (categoryToDelete == null)
-            {
-                throw new NotFoundException(nameof(Category), request.CategoryId);
-            }
-
-            await _categoryRepository.DeleteAsync(categoryToDelete);
-
-            return Unit.Value;
-        }
+        return Unit.Value;
     }
 }
