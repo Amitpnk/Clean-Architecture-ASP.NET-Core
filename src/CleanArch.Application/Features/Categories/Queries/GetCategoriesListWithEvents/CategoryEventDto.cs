@@ -1,5 +1,3 @@
-using System;
-
 namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents;
 
 public class CategoryEventDto

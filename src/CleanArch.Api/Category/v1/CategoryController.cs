@@ -3,10 +3,7 @@ using CleanArch.Application.Features.Categories.Commands.CreateCategory;
 using CleanArch.Application.Features.Categories.Queries.GetCategoriesList;
 using CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace CleanArch.Api.Category.v1;
 

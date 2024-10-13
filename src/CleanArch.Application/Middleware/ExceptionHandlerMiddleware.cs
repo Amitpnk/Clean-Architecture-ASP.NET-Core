@@ -2,9 +2,7 @@ using CleanArch.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System;
 using System.Net;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Middleware;
 

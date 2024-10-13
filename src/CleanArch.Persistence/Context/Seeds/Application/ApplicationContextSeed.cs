@@ -1,7 +1,5 @@
 using CleanArch.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 
 namespace CleanArch.Persistence.Context.Seeds.Application;
 

@@ -4,10 +4,6 @@ using CleanArch.Domain.Common;
 using CleanArch.Domain.Entities;
 using CleanArch.Persistence.Context.Seeds.Application;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CleanArch.Persistence.Context;
 

@@ -1,5 +1,4 @@
 using MediatR;
-using System;
 
 namespace CleanArch.Application.Features.Categories.Commands.UpdateCategory;
 

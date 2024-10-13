@@ -1,5 +1,4 @@
 using MediatR;
-using System;
 
 namespace CleanArch.Application.Features.Events.Commands.UpdateEvent;
 

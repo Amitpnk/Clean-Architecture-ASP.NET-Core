@@ -1,5 +1,3 @@
-using System;
-
 namespace CleanArch.Domain.Common;
 
 public class AuditableEntity

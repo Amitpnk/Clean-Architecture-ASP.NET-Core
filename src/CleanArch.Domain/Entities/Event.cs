@@ -1,5 +1,4 @@
 using CleanArch.Domain.Common;
-using System;
 
 namespace CleanArch.Domain.Entities;
 

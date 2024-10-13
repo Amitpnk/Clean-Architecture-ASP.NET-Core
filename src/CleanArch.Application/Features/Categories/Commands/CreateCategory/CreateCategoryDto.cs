@@ -1,5 +1,3 @@
-using System;
-
 namespace CleanArch.Application.Features.Categories.Commands.CreateCategory;
 
 public class CreateCategoryDto

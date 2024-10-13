@@ -7,10 +7,7 @@ using CleanArch.Application.Features.Events.Queries.GetEventsExport;
 using CleanArch.Application.Features.Events.Queries.GetEventsList;
 using CleanArch.CrossCuttingConcerns.Utility;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace CleanArch.Api.Event.v1;
 

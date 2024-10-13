@@ -5,8 +5,6 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace CleanArch.Infrastructure.Mail;
 

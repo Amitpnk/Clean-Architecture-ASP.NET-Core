@@ -5,9 +5,6 @@ using CleanArch.Domain.Entities;
 using CleanArch.Domain.Services.Mail;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Features.Events.Commands.CreateEvent;
 

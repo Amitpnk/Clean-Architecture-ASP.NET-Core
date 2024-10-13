@@ -1,5 +1,3 @@
-using System;
-
 namespace CleanArch.Domain.Services.Authentication;
 
 public class RefreshToken

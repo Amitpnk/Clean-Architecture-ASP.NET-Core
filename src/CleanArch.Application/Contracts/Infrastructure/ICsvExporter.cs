@@ -1,5 +1,4 @@
 using CleanArch.Application.Features.Events.Queries.GetEventsExport;
-using System.Collections.Generic;
 
 namespace CleanArch.Application.Contracts.Infrastructure;
 

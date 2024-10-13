@@ -1,6 +1,4 @@
 using CleanArch.Domain.Common;
-using System;
-using System.Collections.Generic;
 
 namespace CleanArch.Domain.Entities;
 

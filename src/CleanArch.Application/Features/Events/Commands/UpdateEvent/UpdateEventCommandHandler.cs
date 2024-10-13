@@ -3,8 +3,6 @@ using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Application.Exceptions;
 using CleanArch.Domain.Entities;
 using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Features.Events.Commands.UpdateEvent;
 

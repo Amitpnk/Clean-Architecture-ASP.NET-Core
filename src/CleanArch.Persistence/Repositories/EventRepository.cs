@@ -1,9 +1,6 @@
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
 using CleanArch.Persistence.Context;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CleanArch.Persistence.Repositories;
 

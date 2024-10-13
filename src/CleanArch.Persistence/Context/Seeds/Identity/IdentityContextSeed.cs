@@ -1,7 +1,6 @@
 using CleanArch.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace CleanArch.Persistence.Context.Seeds.Identity;
 

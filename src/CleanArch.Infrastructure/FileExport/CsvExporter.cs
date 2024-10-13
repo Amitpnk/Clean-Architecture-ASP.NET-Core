@@ -1,9 +1,7 @@
 using CleanArch.Application.Contracts.Infrastructure;
 using CleanArch.Application.Features.Events.Queries.GetEventsExport;
 using CsvHelper;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 
 namespace CleanArch.Infrastructure.FileExport;
 

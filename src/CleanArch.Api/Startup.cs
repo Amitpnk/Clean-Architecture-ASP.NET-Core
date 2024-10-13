@@ -1,30 +1,21 @@
 using CleanArch.Application;
 using CleanArch.Application.Middleware;
+using CleanArch.CrossCuttingConcerns.Identity;
+using CleanArch.CrossCuttingConcerns.OS;
 using CleanArch.CrossCuttingConcerns.Utility;
 using CleanArch.Domain.Services.Configuration;
 using CleanArch.Infrastructure;
+using CleanArch.Infrastructure.Identity;
+using CleanArch.Infrastructure.OS;
 using CleanArch.Persistence;
 using CleanArch.Persistence.Context;
 using HealthChecks.UI.Client;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi.Models;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using CleanArch.CrossCuttingConcerns.Identity;
-using CleanArch.CrossCuttingConcerns.OS;
-using CleanArch.Infrastructure.Identity;
-using CleanArch.Infrastructure.OS;
 
 namespace CleanArch.Api;
 

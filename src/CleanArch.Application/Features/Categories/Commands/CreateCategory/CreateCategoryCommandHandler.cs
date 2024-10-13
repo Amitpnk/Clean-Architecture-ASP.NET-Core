@@ -2,9 +2,6 @@ using AutoMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
 using MediatR;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Features.Categories.Commands.CreateCategory;
 

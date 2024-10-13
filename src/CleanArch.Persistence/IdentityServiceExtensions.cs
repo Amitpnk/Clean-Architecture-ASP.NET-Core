@@ -1,17 +1,12 @@
 using CleanArch.Application.Contracts.Persistence;
-using CleanArch.Domain.Entities;
 using CleanArch.Domain.Services.Authentication;
-using CleanArch.Persistence.Context;
 using CleanArch.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using System;
 using System.Text;
 
 namespace CleanArch.Persistence;

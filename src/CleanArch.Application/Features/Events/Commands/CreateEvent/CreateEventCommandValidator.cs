@@ -1,8 +1,5 @@
 using CleanArch.Application.Contracts.Persistence;
 using FluentValidation;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Features.Events.Commands.CreateEvent;
 

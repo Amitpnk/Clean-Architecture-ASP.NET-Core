@@ -1,5 +1,3 @@
-using System;
-
 namespace CleanArch.Application.Exceptions;
 
 public class BadRequestException : ApplicationException

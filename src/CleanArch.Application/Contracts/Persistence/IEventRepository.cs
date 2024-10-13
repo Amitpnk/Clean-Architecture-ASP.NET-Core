@@ -1,6 +1,4 @@
 using CleanArch.Domain.Entities;
-using System;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Contracts.Persistence;
 

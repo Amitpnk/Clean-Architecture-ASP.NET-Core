@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
 
 namespace CleanArch.Domain.Services.Mail;
 

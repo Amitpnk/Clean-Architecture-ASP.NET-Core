@@ -1,5 +1,3 @@
-using System;
-
 namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesList;
 
 public class CategoryListVm

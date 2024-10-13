@@ -1,7 +1,6 @@
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Services.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace CleanArch.Api.Account;
 

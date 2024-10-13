@@ -1,7 +1,5 @@
 using CleanArch.Application.Contracts.Persistence;
 using FluentValidation;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Features.Categories.Commands.CreateCategory;
 

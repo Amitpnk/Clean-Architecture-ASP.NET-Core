@@ -1,5 +1,4 @@
 using MediatR;
-using System.Collections.Generic;
 
 namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents;
 

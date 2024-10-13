@@ -1,6 +1,5 @@
 using CleanArch.Domain.Common;
 using CleanArch.Domain.Services.Authentication;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Contracts.Persistence;
 

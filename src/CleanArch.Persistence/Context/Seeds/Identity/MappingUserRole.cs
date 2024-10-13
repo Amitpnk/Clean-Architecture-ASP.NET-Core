@@ -1,6 +1,5 @@
 using CleanArch.Domain.Enum;
 using Microsoft.AspNetCore.Identity;
-using System.Collections.Generic;
 
 namespace CleanArch.Persistence.Context.Seeds;
 

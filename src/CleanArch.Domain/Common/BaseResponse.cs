@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace CleanArch.Domain.Common;
 
 public class BaseResponse<T>

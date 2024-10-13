@@ -1,9 +1,6 @@
 using AutoMapper;
 using CleanArch.Application.Contracts.Persistence;
 using MediatR;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents;
 

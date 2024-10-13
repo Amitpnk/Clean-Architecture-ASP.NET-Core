@@ -2,11 +2,6 @@ using CleanArch.Domain.Entities;
 using CleanArch.Domain.Enum;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CleanArch.Persistence;
 

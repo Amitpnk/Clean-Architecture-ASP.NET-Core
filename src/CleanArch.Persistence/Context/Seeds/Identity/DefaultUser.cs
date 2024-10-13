@@ -1,6 +1,5 @@
 using CleanArch.Domain.Entities;
 using CleanArch.Domain.Enum;
-using System.Collections.Generic;
 
 namespace CleanArch.Persistence.Context.Seeds;
 

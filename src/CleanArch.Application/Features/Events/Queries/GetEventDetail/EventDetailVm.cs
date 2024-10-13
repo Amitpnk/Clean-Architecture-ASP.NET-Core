@@ -1,5 +1,3 @@
-using System;
-
 namespace CleanArch.Application.Features.Events.Queries.GetEventDetail;
 
 public class EventDetailVm
