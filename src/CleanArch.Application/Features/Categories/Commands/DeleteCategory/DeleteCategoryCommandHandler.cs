@@ -6,27 +6,21 @@ using MediatR;
 
 namespace CleanArch.Application.Features.Categories.Commands.DeleteCategory;
 
-public class DeleteCategoryCommandHandler : IRequestHandler<DeleteCategoryCommand>
+public class DeleteCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
+    : IRequestHandler<DeleteCategoryCommand>
 {
-    private readonly IGenericRepositoryAsync<Category> _categoryRepository;
-    private readonly IMapper _mapper;
-
-    public DeleteCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
-    {
-        _mapper = mapper;
-        _categoryRepository = categoryRepository;
-    }
+    private readonly IMapper _mapper = mapper;
 
     public async Task<Unit> Handle(DeleteCategoryCommand request, CancellationToken cancellationToken)
     {
-        var categoryToDelete = await _categoryRepository.GetByIdAsync(request.CategoryId);
+        var categoryToDelete = await categoryRepository.GetByIdAsync(request.CategoryId);
 
         if (categoryToDelete == null)
         {
             throw new NotFoundException(nameof(Category), request.CategoryId);
         }
 
-        await _categoryRepository.DeleteAsync(categoryToDelete);
+        await categoryRepository.DeleteAsync(categoryToDelete);
 
         return Unit.Value;
     }

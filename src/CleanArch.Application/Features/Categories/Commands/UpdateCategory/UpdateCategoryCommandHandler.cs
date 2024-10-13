@@ -6,21 +6,13 @@ using MediatR;
 
 namespace CleanArch.Application.Features.Categories.Commands.UpdateCategory;
 
-public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand>
+public class UpdateCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
+    : IRequestHandler<UpdateCategoryCommand>
 {
-    private readonly IGenericRepositoryAsync<Category> _categoryRepository;
-    private readonly IMapper _mapper;
-
-    public UpdateCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
-    {
-        _mapper = mapper;
-        _categoryRepository = categoryRepository;
-    }
-
     public async Task<Unit> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
 
-        var categoryToUpdate = await _categoryRepository.GetByIdAsync(request.CategoryId);
+        var categoryToUpdate = await categoryRepository.GetByIdAsync(request.CategoryId);
 
         if (categoryToUpdate == null)
         {
@@ -33,9 +25,9 @@ public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryComman
         if (validationResult.Errors.Count > 0)
             throw new ValidationException(validationResult);
 
-        _mapper.Map(request, categoryToUpdate, typeof(UpdateCategoryCommand), typeof(Category));
+        mapper.Map(request, categoryToUpdate, typeof(UpdateCategoryCommand), typeof(Category));
 
-        await _categoryRepository.UpdateAsync(categoryToUpdate);
+        await categoryRepository.UpdateAsync(categoryToUpdate);
 
         return Unit.Value;
     }

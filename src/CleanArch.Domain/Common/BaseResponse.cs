@@ -1,31 +1,21 @@
 namespace CleanArch.Domain.Common;
 
-public class BaseResponse<T>
+public class BaseResponse<T>(string message, bool success)
 {
-    public BaseResponse()
+    public BaseResponse() : this(null, true)
     {
-        Success = true;
     }
-    public BaseResponse(string message)
+    public BaseResponse(string message) : this(message, true)
     {
-        Success = true;
-        Message = message;
     }
 
-    public BaseResponse(string message, bool success)
+    public BaseResponse(T data, string message = null) : this(message, true)
     {
-        Success = success;
-        Message = message;
-    }
-    public BaseResponse(T data, string message = null)
-    {
-        Success = true;
-        Message = message;
         Data = data;
     }
 
-    public bool Success { get; set; }
-    public string Message { get; set; }
+    public bool Success { get; set; } = success;
+    public string Message { get; set; } = message;
     public List<string> ValidationErrors { get; set; }
     public T Data { get; set; }
 }

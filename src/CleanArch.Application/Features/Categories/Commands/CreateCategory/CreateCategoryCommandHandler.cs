@@ -5,24 +5,17 @@ using MediatR;
 
 namespace CleanArch.Application.Features.Categories.Commands.CreateCategory;
 
-public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryCommand, CreateCategoryCommandResponse>
+public class CreateCategoryCommandHandler(
+    IMapper mapper,
+    ICategoryRepository categoryRepository)
+    : IRequestHandler<CreateCategoryCommand, CreateCategoryCommandResponse>
 {
-    private readonly ICategoryRepository _categoryRepository;
-    private readonly IMapper _mapper;
-
-    public CreateCategoryCommandHandler(IMapper mapper,
-        ICategoryRepository categoryRepository)
-    {
-        _mapper = mapper;
-        _categoryRepository = categoryRepository;
-    }
-
     public async Task<CreateCategoryCommandResponse> Handle(CreateCategoryCommand request,
         CancellationToken cancellationToken)
     {
         var createCategoryCommandResponse = new CreateCategoryCommandResponse();
 
-        var validator = new CreateCategoryCommandValidator(_categoryRepository);
+        var validator = new CreateCategoryCommandValidator(categoryRepository);
         var validationResult = await validator.ValidateAsync(request);
 
         if (validationResult.Errors.Count > 0)
@@ -37,8 +30,8 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         if (createCategoryCommandResponse.Success)
         {
             var category = new Category() { Name = request.Name };
-            category = await _categoryRepository.AddAsync(category);
-            createCategoryCommandResponse.Category = _mapper.Map<CreateCategoryDto>(category);
+            category = await categoryRepository.AddAsync(category);
+            createCategoryCommandResponse.Category = mapper.Map<CreateCategoryDto>(category);
         }
 
         return createCategoryCommandResponse;

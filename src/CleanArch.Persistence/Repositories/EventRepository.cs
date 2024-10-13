@@ -4,12 +4,8 @@ using CleanArch.Persistence.Context;
 
 namespace CleanArch.Persistence.Repositories;
 
-public class EventRepository : GenericRepository<Event>, IEventRepository
+public class EventRepository(ApplicationDbContext dbContext) : GenericRepository<Event>(dbContext), IEventRepository
 {
-    public EventRepository(ApplicationDbContext dbContext) : base(dbContext)
-    {
-    }
-
     public Task<bool> IsEventNameAndDateUnique(string name, DateTime eventDate)
     {
         var matches = _dbContext.Events.Any(e => e.Name.Equals(name) && e.Date.Date.Equals(eventDate.Date));

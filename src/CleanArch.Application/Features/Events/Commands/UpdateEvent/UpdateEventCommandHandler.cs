@@ -6,21 +6,13 @@ using MediatR;
 
 namespace CleanArch.Application.Features.Events.Commands.UpdateEvent;
 
-public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand>
+public class UpdateEventCommandHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
+    : IRequestHandler<UpdateEventCommand>
 {
-    private readonly IGenericRepositoryAsync<Event> _eventRepository;
-    private readonly IMapper _mapper;
-
-    public UpdateEventCommandHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
-    {
-        _mapper = mapper;
-        _eventRepository = eventRepository;
-    }
-
     public async Task<Unit> Handle(UpdateEventCommand request, CancellationToken cancellationToken)
     {
 
-        var eventToUpdate = await _eventRepository.GetByIdAsync(request.EventId);
+        var eventToUpdate = await eventRepository.GetByIdAsync(request.EventId);
 
         if (eventToUpdate == null)
         {
@@ -33,9 +25,9 @@ public class UpdateEventCommandHandler : IRequestHandler<UpdateEventCommand>
         if (validationResult.Errors.Count > 0)
             throw new ValidationException(validationResult);
 
-        _mapper.Map(request, eventToUpdate, typeof(UpdateEventCommand), typeof(Event));
+        mapper.Map(request, eventToUpdate, typeof(UpdateEventCommand), typeof(Event));
 
-        await _eventRepository.UpdateAsync(eventToUpdate);
+        await eventRepository.UpdateAsync(eventToUpdate);
 
         return Unit.Value;
     }

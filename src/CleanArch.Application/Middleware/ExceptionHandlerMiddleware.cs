@@ -6,22 +6,15 @@ using System.Net;
 
 namespace CleanArch.Application.Middleware;
 
-public class ExceptionHandlerMiddleware
+public class ExceptionHandlerMiddleware(
+    RequestDelegate next,
+    ILogger<ExceptionHandlerMiddleware> logger)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger<ExceptionHandlerMiddleware> _logger;
-    public ExceptionHandlerMiddleware(RequestDelegate next,
-        ILogger<ExceptionHandlerMiddleware> logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
     public async Task Invoke(HttpContext context)
     {
         try
         {
-            await _next(context);
+            await next(context);
         }
         catch (Exception ex)
         {
@@ -57,7 +50,7 @@ public class ExceptionHandlerMiddleware
         }
 
 
-        _logger.LogError(result);
+        logger.LogError(result);
 
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = httpStatusCode;

@@ -5,13 +5,9 @@ using Newtonsoft.Json;
 
 namespace CleanArch.Persistence;
 
-public class AuditEntry
+public class AuditEntry(EntityEntry entry)
 {
-    public AuditEntry(EntityEntry entry)
-    {
-        Entry = entry;
-    }
-    public EntityEntry Entry { get; }
+    public EntityEntry Entry { get; } = entry;
     public string UserId { get; set; }
     public string TableName { get; set; }
     public Dictionary<string, object> KeyValues { get; } = new Dictionary<string, object>();

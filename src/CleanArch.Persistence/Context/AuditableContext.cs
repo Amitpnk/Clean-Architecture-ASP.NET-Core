@@ -4,13 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.Context;
 
-public class AuditableContext : IdentityContext
+public class AuditableContext(DbContextOptions options) : IdentityContext(options)
 {
-    public AuditableContext(DbContextOptions options) : base(options)
-    {
-
-    }
-
     public DbSet<AuditTrail> AuditTrails { get; set; }
 
     public virtual async Task<int> SaveChangesAsync(string userId = null)

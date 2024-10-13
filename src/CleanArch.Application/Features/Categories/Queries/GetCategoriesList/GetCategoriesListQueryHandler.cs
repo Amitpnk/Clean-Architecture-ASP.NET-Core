@@ -5,20 +5,12 @@ using MediatR;
 
 namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesList;
 
-public class GetCategoriesListQueryHandler : IRequestHandler<GetCategoriesListQuery, List<CategoryListVm>>
+public class GetCategoriesListQueryHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
+    : IRequestHandler<GetCategoriesListQuery, List<CategoryListVm>>
 {
-    private readonly IGenericRepositoryAsync<Category> _categoryRepository;
-    private readonly IMapper _mapper;
-
-    public GetCategoriesListQueryHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
-    {
-        _mapper = mapper;
-        _categoryRepository = categoryRepository;
-    }
-
     public async Task<List<CategoryListVm>> Handle(GetCategoriesListQuery request, CancellationToken cancellationToken)
     {
-        var allCategories = (await _categoryRepository.ListAllAsync()).OrderBy(x => x.Name);
-        return _mapper.Map<List<CategoryListVm>>(allCategories);
+        var allCategories = (await categoryRepository.ListAllAsync()).OrderBy(x => x.Name);
+        return mapper.Map<List<CategoryListVm>>(allCategories);
     }
 }

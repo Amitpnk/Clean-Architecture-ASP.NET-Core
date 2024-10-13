@@ -5,12 +5,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.Repositories;
 
-public class CategoryRepository : GenericRepository<Category>, ICategoryRepository
+public class CategoryRepository(ApplicationDbContext dbContext)
+    : GenericRepository<Category>(dbContext), ICategoryRepository
 {
-    public CategoryRepository(ApplicationDbContext dbContext) : base(dbContext)
-    {
-    }
-
     public async Task<List<Category>> GetCategoriesWithEvents(bool includePassedEvents)
     {
         var allCategories = await _dbContext.Categories.Include(x => x.Events).ToListAsync();

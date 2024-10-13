@@ -6,24 +6,17 @@ using MediatR;
 
 namespace CleanArch.Application.Features.Events.Queries.GetEventsExport;
 
-public class GetEventsExportQueryHandler : IRequestHandler<GetEventsExportQuery, EventExportFileVm>
+public class GetEventsExportQueryHandler(
+    IMapper mapper,
+    IGenericRepositoryAsync<Event> eventRepository,
+    ICsvExporter csvExporter)
+    : IRequestHandler<GetEventsExportQuery, EventExportFileVm>
 {
-    private readonly IGenericRepositoryAsync<Event> _eventRepository;
-    private readonly IMapper _mapper;
-    private readonly ICsvExporter _csvExporter;
-
-    public GetEventsExportQueryHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository, ICsvExporter csvExporter)
-    {
-        _mapper = mapper;
-        _eventRepository = eventRepository;
-        _csvExporter = csvExporter;
-    }
-
     public async Task<EventExportFileVm> Handle(GetEventsExportQuery request, CancellationToken cancellationToken)
     {
-        var allEvents = _mapper.Map<List<EventExportDto>>((await _eventRepository.ListAllAsync()).OrderBy(x => x.Date));
+        var allEvents = mapper.Map<List<EventExportDto>>((await eventRepository.ListAllAsync()).OrderBy(x => x.Date));
 
-        var fileData = _csvExporter.ExportEventsToCsv(allEvents);
+        var fileData = csvExporter.ExportEventsToCsv(allEvents);
 
         var eventExportFileDto = new EventExportFileVm() { ContentType = "text/csv", Data = fileData, EventExportFileName = $"{Guid.NewGuid()}.csv" };
 

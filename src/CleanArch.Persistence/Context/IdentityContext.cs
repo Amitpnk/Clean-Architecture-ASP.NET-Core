@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.Context;
 
-public class IdentityContext : IdentityDbContext<ApplicationUser>
+public class IdentityContext(DbContextOptions options) : IdentityDbContext<ApplicationUser>(options)
 {
-    public IdentityContext(DbContextOptions options) : base(options)
-    {
-    }
-
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

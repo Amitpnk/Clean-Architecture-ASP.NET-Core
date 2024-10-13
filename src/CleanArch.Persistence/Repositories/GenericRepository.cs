@@ -4,14 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.Repositories;
 
-public class GenericRepository<T> : IGenericRepositoryAsync<T> where T : class
+public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepositoryAsync<T>
+    where T : class
 {
-    protected readonly ApplicationDbContext _dbContext;
-
-    public GenericRepository(ApplicationDbContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
+    protected readonly ApplicationDbContext _dbContext = dbContext;
 
     public virtual async Task<T> GetByIdAsync(Guid id)
     {

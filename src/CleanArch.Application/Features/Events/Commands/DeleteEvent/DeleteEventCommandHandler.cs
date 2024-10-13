@@ -6,27 +6,21 @@ using MediatR;
 
 namespace CleanArch.Application.Features.Events.Commands.DeleteEvent;
 
-public class DeleteEventCommandHandler : IRequestHandler<DeleteEventCommand>
+public class DeleteEventCommandHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
+    : IRequestHandler<DeleteEventCommand>
 {
-    private readonly IGenericRepositoryAsync<Event> _eventRepository;
-    private readonly IMapper _mapper;
-
-    public DeleteEventCommandHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
-    {
-        _mapper = mapper;
-        _eventRepository = eventRepository;
-    }
+    private readonly IMapper _mapper = mapper;
 
     public async Task<Unit> Handle(DeleteEventCommand request, CancellationToken cancellationToken)
     {
-        var eventToDelete = await _eventRepository.GetByIdAsync(request.EventId);
+        var eventToDelete = await eventRepository.GetByIdAsync(request.EventId);
 
         if (eventToDelete == null)
         {
             throw new NotFoundException(nameof(Event), request.EventId);
         }
 
-        await _eventRepository.DeleteAsync(eventToDelete);
+        await eventRepository.DeleteAsync(eventToDelete);
 
         return Unit.Value;
     }

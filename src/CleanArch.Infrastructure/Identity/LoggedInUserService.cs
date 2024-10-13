@@ -6,31 +6,26 @@ namespace CleanArch.Infrastructure.Identity;
 
 
 // refer CurrentWebUser
-public class LoggedInUserService : ILoggedInUserService
+public class LoggedInUserService(IHttpContextAccessor httpContextAccessor) : ILoggedInUserService
 {
-    private readonly IHttpContextAccessor _context;
-    public LoggedInUserService(IHttpContextAccessor httpContextAccessor)
-    {
-        _context = httpContextAccessor;
-        //UserId = httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-        //Claims = httpContextAccessor.HttpContext?.User?.Claims.AsEnumerable().Select(item => new KeyValuePair<string, string>(item.Type, item.Value)).ToList();
-    }
-    public bool IsAuthenticated
-    {
-        get
-        {
-            return _context.HttpContext.User.Identity.IsAuthenticated;
-        }
-    }
+    //UserId = httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+    //Claims = httpContextAccessor.HttpContext?.User?.Claims.AsEnumerable().Select(item => new KeyValuePair<string, string>(item.Type, item.Value)).ToList();
+
+    public bool IsAuthenticated => httpContextAccessor.HttpContext is { User.Identity.IsAuthenticated: true };
 
     public string UserId
     {
         get
         {
-            var userId = _context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-                ?? _context.HttpContext.User.FindFirst("sub")?.Value;
+            if (httpContextAccessor.HttpContext != null)
+            {
+                var userId = httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                             ?? httpContextAccessor.HttpContext.User.FindFirst("sub")?.Value;
 
-            return userId;
+                return userId;
+            }
+
+            return null;
         }
     }
 
@@ -38,7 +33,7 @@ public class LoggedInUserService : ILoggedInUserService
     {
         get
         {
-            return _context.HttpContext?.User?.Claims.AsEnumerable().Select(item => new KeyValuePair<string, string>(
+            return httpContextAccessor.HttpContext?.User.Claims.AsEnumerable().Select(item => new KeyValuePair<string, string>(
                 item.Type,
                 item.Value)).ToList();
         }
