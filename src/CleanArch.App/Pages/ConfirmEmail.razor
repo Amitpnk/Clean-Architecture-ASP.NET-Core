@@ -1,0 +1,52 @@
+@* The API builds the confirmation link from the caller's Origin, so when this app registers a user the link
+   points here (<app>/api/account/confirm-email?userId=...&code=...). This page forwards it to the API. *@
+@page "/api/account/confirm-email"
+@inject ApiClient Api
+
+<PageTitle>Confirm account · CleanArch</PageTitle>
+
+<div class="auth-card">
+    <h1>Confirm your account</h1>
+
+    @if (message is not null)
+    {
+        <div class="alert alert-success" role="status">@message</div>
+        <a class="btn btn-primary" href="login">Sign in</a>
+    }
+    else if (error is not null)
+    {
+        <ErrorAlert Error="error" />
+        <a href="register">Register again</a>
+    }
+    else
+    {
+        <p class="text-muted">Confirming…</p>
+    }
+</div>
+
+@code {
+    private string message;
+    private Exception error;
+
+    [SupplyParameterFromQuery] public string UserId { get; set; }
+    [SupplyParameterFromQuery] public string Code { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(UserId) || string.IsNullOrEmpty(Code))
+        {
+            error = new InvalidOperationException("This confirmation link is incomplete. Open the link from your registration again.");
+            return;
+        }
+
+        try
+        {
+            await Api.ConfirmEmailAsync(UserId, Code);
+            message = "Your account is confirmed. You can sign in now.";
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+    }
+}

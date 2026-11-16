@@ -1,0 +1,26 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+
+    # Runtime configuration for the Blazor app; API_BASE_URL is substituted when the container starts.
+    location = /appsettings.json {
+        default_type application/json;
+        add_header Cache-Control "no-store";
+        return 200 '{"ApiBaseUrl":"${API_BASE_URL}"}';
+    }
+
+    # Missing JSON files must 404 rather than fall back to index.html, which Blazor would fail to parse.
+    location ~* \.json$ {
+        try_files $uri =404;
+    }
+
+    location / {
+        # Client-side routes (e.g. /events/123) are served by index.html.
+        try_files $uri $uri/ /index.html;
+    }
+
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+}

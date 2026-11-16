@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject JwtAuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +9,16 @@
 
     <div class="main">
         <div class="top-row px-4">
-            <a href="http://blazor.net" target="_blank" class="ml-md-auto">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    <span class="mr-3 text-muted">Signed in as <strong>@context.User.Identity?.Name</strong></span>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="SignOutAsync">Sign out</button>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="login" class="mr-3">Sign in</a>
+                    <a href="register">Register</a>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <div class="content px-4">
@@ -15,3 +26,11 @@
         </div>
     </div>
 </div>
+
+@code {
+    private async Task SignOutAsync()
+    {
+        await AuthenticationStateProvider.SignOutAsync();
+        Navigation.NavigateTo("login");
+    }
+}

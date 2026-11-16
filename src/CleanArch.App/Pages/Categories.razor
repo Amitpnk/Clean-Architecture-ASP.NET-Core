@@ -1,0 +1,105 @@
+@page "/categories"
+@attribute [Authorize]
+@inject ApiClient Api
+
+<PageTitle>Categories · CleanArch</PageTitle>
+
+<div class="page-header">
+    <h1>Categories</h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-7 mb-4">
+        <ErrorAlert Error="loadError" />
+
+        @if (categories is null)
+        {
+            @if (loadError is null)
+            {
+                <p class="text-muted">Loading…</p>
+            }
+        }
+        else if (categories.Count == 0)
+        {
+            <p>No categories yet. Add one using the form.</p>
+        }
+        else
+        {
+            <ul class="list-group">
+                @foreach (var category in categories.OrderBy(c => c.Name))
+                {
+                    <li class="list-group-item @(category.CategoryId == lastCreatedId ? "list-group-item-success" : "")">
+                        @category.Name
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5 card-title">Add a category</h2>
+
+                <ErrorAlert Error="saveError" />
+
+                <EditForm Model="model" OnValidSubmit="CreateAsync" FormName="create-category">
+                    <DataAnnotationsValidator />
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <InputText id="name" class="form-control" @bind-Value="model.Name" />
+                        <ValidationMessage For="() => model.Name" />
+                    </div>
+                    <button type="submit" class="btn btn-primary" disabled="@busy">
+                        @(busy ? "Saving…" : "Add category")
+                    </button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<CategoryListVm> categories;
+    private CategoryFormModel model = new();
+    private Guid? lastCreatedId;
+    private Exception loadError;
+    private Exception saveError;
+    private bool busy;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        loadError = null;
+        try
+        {
+            categories = await Api.GetCategoriesAsync();
+        }
+        catch (ApiRequestException ex)
+        {
+            loadError = ex;
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        busy = true;
+        saveError = null;
+        try
+        {
+            var created = await Api.CreateCategoryAsync(model);
+            lastCreatedId = created?.CategoryId;
+            model = new CategoryFormModel();
+            await LoadAsync();
+        }
+        catch (ApiRequestException ex)
+        {
+            saveError = ex;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

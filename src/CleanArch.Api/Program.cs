@@ -47,10 +47,12 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 // CORS
 builder.Services.AddCors(options =>
 {
+    // Content-Disposition is exposed so browser clients (CleanArch.App) can read the CSV export's file name.
     options.AddPolicy("AllowedOrigins", policy => policy
         .WithOrigins(appSettings.CORS.AllowedOrigins)
         .AllowAnyMethod()
-        .AllowAnyHeader());
+        .AllowAnyHeader()
+        .WithExposedHeaders("Content-Disposition"));
 
     options.AddPolicy("AllowAnyOrigin", policy => policy
         .AllowAnyOrigin()

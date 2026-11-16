@@ -1,8 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
+  <!--
+    Standalone Blazor WebAssembly client for CleanArch.Api.
+    It talks to the API over HTTP only and deliberately has no reference to the server-side layers;
+    the request/response shapes it needs live in Models/.
+  -->
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
   </ItemGroup>
 
 </Project>

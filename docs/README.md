@@ -77,7 +77,10 @@ Backend
 - [x] Framework: .NET 10 (LTS), ASP.NET Core 10
 
 UI
-- [ ] Blazor
+- [x] Blazor WebAssembly client (`CleanArch.App`) calling the Web API
+    - [x] JWT sign-in, registration and email confirmation, with protected routes
+    - [x] Dashboard, categories, and events (list, details, create, edit, delete, CSV export)
+    - [x] API errors (RFC 9457 problem details) shown inline, with validation messages
 
 Database
 - [x] MS SQL and Inmemory DB
@@ -151,19 +154,39 @@ Tooling
 docker compose up --build
 ```
 
-This starts SQL Server 2022 and the API; migrations and seed data are applied on startup.
-Swagger is at http://localhost:8080/swagger and the health check UI at http://localhost:8080/healthcheck-ui.
+This starts SQL Server 2022, the API and the Blazor UI; migrations and seed data are applied on startup.
+
+| What | URL |
+| --- | --- |
+| Blazor UI | http://localhost:8081 |
+| Swagger | http://localhost:8080/swagger |
+| Health check UI | http://localhost:8080/healthcheck-ui |
+
 Sign in with `superadmin@gmail.com` / `Password@123`. Override the SQL `sa` password with the `SA_PASSWORD` environment variable.
+The UI container reads the API's address from `API_BASE_URL` (default `http://localhost:8080/`).
+
+## Running locally
+
+Start the API and the Blazor UI in two terminals (the API needs SQL Server; see `ConnectionStrings` in `appsettings.json`):
+
+```bash
+dotnet run --project src/CleanArch.Api --launch-profile CleanArch.Api   # https://localhost:5001
+dotnet run --project src/CleanArch.App                                  # https://localhost:7200
+```
+
+The UI calls the API at `ApiBaseUrl` in `src/CleanArch.App/wwwroot/appsettings.json`. The UI's origin must be listed in
+the API's `CORS:AllowedOrigins`; `https://localhost:7200`, `http://localhost:5200` and `http://localhost:8081` already are.
 
 ## Tests
 
 | Project | Framework | Covers |
 | --- | --- | --- |
 | `CleanArch.Domain.UnitTests` | xUnit v3 | `BaseResponse`, `ValueObject`, entities, request validation attributes |
-| `CleanArch.Application.UnitTests` | xUnit v3 | Every command/query handler and validator, CQRS dispatcher, mappings, exceptions, exception middleware |
+| `CleanArch.Application.UnitTests` | xUnit v3 | Every command/query handler and validator, CQRS dispatcher, mappings, exceptions |
 | `CleanArch.Infrastructure.UnitTests` | xUnit v3 | CSV export, logged-in user, clock, service registration |
 | `CleanArch.Persistence.UnitTests` | xUnit v3 | Repositories, audit trail, seed data, `AuthenticationService` (real Identity over EF InMemory) |
-| `CleanArch.Api.UnitTests` | xUnit v3 | Controllers (mocked dispatcher), Swagger file-result filter |
+| `CleanArch.Api.UnitTests` | xUnit v3 | Controllers (mocked dispatcher), global exception handler, Swagger file-result filter |
+| `CleanArch.App.UnitTests` | xUnit v3 | Blazor client: API client and error mapping, JWT parsing, auth state, bearer-token handler |
 | `CleanArch.Persistence.IntegrationTests` | xUnit v3 | Migrations and repositories against real SQL Server |
 | `CleanArch.Api.IntegrationTests` | xUnit v3 | HTTP endpoints and JWT auth against real SQL Server |
 

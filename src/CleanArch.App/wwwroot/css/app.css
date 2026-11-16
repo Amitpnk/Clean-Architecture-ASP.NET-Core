@@ -48,3 +48,31 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+/* CleanArch UI */
+.app-loading {
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.page-header h1 {
+    margin-bottom: 0;
+}
+
+.auth-card {
+    max-width: 30rem;
+    margin: 1rem auto;
+}
+
+.form-card {
+    max-width: 40rem;
+}

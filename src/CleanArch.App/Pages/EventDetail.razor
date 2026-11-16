@@ -1,0 +1,53 @@
+@page "/events/{Id:guid}"
+@attribute [Authorize]
+@inject ApiClient Api
+
+<PageTitle>@(item?.Name ?? "Event") · CleanArch</PageTitle>
+
+<p><a href="events">&larr; All events</a></p>
+
+<ErrorAlert Error="error" />
+
+@if (item is not null)
+{
+    <div class="page-header">
+        <h1>@item.Name</h1>
+        <a class="btn btn-outline-primary" href="events/@item.EventId/edit">Edit</a>
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">Date</dt>
+        <dd class="col-sm-9">@item.Date.ToString("f")</dd>
+
+        <dt class="col-sm-3">Category</dt>
+        <dd class="col-sm-9">@(item.Category?.Name ?? "—")</dd>
+
+        <dt class="col-sm-3">Description</dt>
+        <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(item.Description) ? "—" : item.Description)</dd>
+    </dl>
+}
+else if (error is null)
+{
+    <p class="text-muted">Loading…</p>
+}
+
+@code {
+    private EventDetailVm item;
+    private Exception error;
+
+    [Parameter] public Guid Id { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        item = null;
+        error = null;
+        try
+        {
+            item = await Api.GetEventAsync(Id);
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+    }
+}

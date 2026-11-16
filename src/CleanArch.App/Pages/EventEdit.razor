@@ -1,0 +1,143 @@
+@page "/events/new"
+@page "/events/{Id:guid}/edit"
+@attribute [Authorize]
+@inject ApiClient Api
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsNew ? "New event" : "Edit event") · CleanArch</PageTitle>
+
+<p><a href="@(IsNew ? "events" : $"events/{Id}")">&larr; Back</a></p>
+<h1>@(IsNew ? "New event" : "Edit event")</h1>
+
+<ErrorAlert Error="loadError" />
+
+@if (model is not null && categories is not null)
+{
+    <div class="form-card">
+        <ErrorAlert Error="saveError" />
+
+        @if (categories.Count == 0)
+        {
+            <div class="alert alert-info">Events belong to a category. <a href="categories">Create a category</a> first.</div>
+        }
+
+        <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="event">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <InputText id="name" class="form-control" @bind-Value="model.Name" />
+                <ValidationMessage For="() => model.Name" />
+            </div>
+
+            <div class="form-group">
+                <label for="date">Date and time</label>
+                <InputDate id="date" Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="model.Date" />
+                @if (IsNew)
+                {
+                    <small class="form-text text-muted">Must be in the future.</small>
+                }
+                <ValidationMessage For="() => model.Date" />
+            </div>
+
+            <div class="form-group">
+                <label for="category">Category</label>
+                <InputSelect id="category" class="form-control" @bind-Value="model.CategoryId">
+                    <option value="@Guid.Empty">Choose a category…</option>
+                    @foreach (var category in categories.OrderBy(c => c.Name))
+                    {
+                        <option value="@category.CategoryId">@category.Name</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => model.CategoryId" />
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <InputTextArea id="description" class="form-control" rows="4" @bind-Value="model.Description" disabled="@(!IsNew)" />
+                @if (!IsNew)
+                {
+                    @* UpdateEventCommand has no Description field, so the API keeps the original. *@
+                    <small class="form-text text-muted">The description can only be set when the event is created.</small>
+                }
+            </div>
+
+            <button type="submit" class="btn btn-primary" disabled="@busy">
+                @(busy ? "Saving…" : IsNew ? "Create event" : "Save changes")
+            </button>
+            <a class="btn btn-link" href="@(IsNew ? "events" : $"events/{Id}")">Cancel</a>
+        </EditForm>
+    </div>
+}
+else if (loadError is null)
+{
+    <p class="text-muted">Loading…</p>
+}
+
+@code {
+    private EventFormModel model;
+    private List<CategoryListVm> categories;
+    private Exception loadError;
+    private Exception saveError;
+    private bool busy;
+
+    [Parameter] public Guid? Id { get; set; }
+
+    private bool IsNew => Id is null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        loadError = null;
+        try
+        {
+            categories = await Api.GetCategoriesAsync();
+
+            if (IsNew)
+            {
+                model = new EventFormModel();
+            }
+            else
+            {
+                var existing = await Api.GetEventAsync(Id!.Value);
+                model = new EventFormModel
+                {
+                    Name = existing.Name,
+                    Description = existing.Description,
+                    Date = existing.Date,
+                    CategoryId = existing.CategoryId
+                };
+            }
+        }
+        catch (ApiRequestException ex)
+        {
+            loadError = ex;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        busy = true;
+        saveError = null;
+        try
+        {
+            if (IsNew)
+            {
+                var id = await Api.CreateEventAsync(model);
+                Navigation.NavigateTo($"events/{id}");
+            }
+            else
+            {
+                await Api.UpdateEventAsync(Id!.Value, model);
+                Navigation.NavigateTo($"events/{Id}");
+            }
+        }
+        catch (ApiRequestException ex)
+        {
+            saveError = ex;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+}

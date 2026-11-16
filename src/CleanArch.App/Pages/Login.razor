@@ -1,0 +1,71 @@
+@page "/login"
+@inject ApiClient Api
+@inject JwtAuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Sign in · CleanArch</PageTitle>
+
+<div class="auth-card">
+    <h1>Sign in</h1>
+
+    <ErrorAlert Error="error" />
+
+    <EditForm Model="model" OnValidSubmit="SignInAsync" FormName="login">
+        <DataAnnotationsValidator />
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <InputText id="email" type="email" class="form-control" autocomplete="username" @bind-Value="model.Email" />
+            <ValidationMessage For="() => model.Email" />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <InputText id="password" type="password" class="form-control" autocomplete="current-password" @bind-Value="model.Password" />
+            <ValidationMessage For="() => model.Password" />
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" disabled="@busy">
+            @(busy ? "Signing in…" : "Sign in")
+        </button>
+    </EditForm>
+
+    <p class="mt-3 mb-1">No account yet? <a href="register">Register</a></p>
+    <p class="text-muted small">The seeded demo account is <code>superadmin@gmail.com</code> / <code>Password@123</code>.</p>
+</div>
+
+@code {
+    private readonly LoginModel model = new();
+    private Exception error;
+    private bool busy;
+
+    [SupplyParameterFromQuery] public string ReturnUrl { get; set; }
+
+    private async Task SignInAsync()
+    {
+        busy = true;
+        error = null;
+        try
+        {
+            var response = await Api.AuthenticateAsync(model);
+            await AuthenticationStateProvider.SignInAsync(response.JWToken);
+            Navigation.NavigateTo(IsLocalUrl(ReturnUrl) ? ReturnUrl : "");
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    // Only follow app-relative return URLs, so a crafted link can't bounce the user to another site.
+    private static bool IsLocalUrl(string url) =>
+        !string.IsNullOrEmpty(url) &&
+        !url.Contains("://", StringComparison.Ordinal) &&
+        !url.StartsWith("//", StringComparison.Ordinal) &&
+        !url.StartsWith("/\\", StringComparison.Ordinal) &&
+        !url.StartsWith('\\');
+}

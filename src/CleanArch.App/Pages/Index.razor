@@ -1,7 +1,96 @@
 ﻿@page "/"
+@attribute [Authorize]
+@inject ApiClient Api
 
-<h1>Hello, world!</h1>
+<PageTitle>Dashboard · CleanArch</PageTitle>
 
-Welcome to your new app.
+<div class="page-header">
+    <h1>Dashboard</h1>
+    <div class="form-check">
+        <input id="includeHistory" class="form-check-input" type="checkbox"
+               checked="@includeHistory" @onchange="ToggleHistoryAsync" />
+        <label class="form-check-label" for="includeHistory">Include past events</label>
+    </div>
+</div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<ErrorAlert Error="error" />
+
+@if (categories is null)
+{
+    @if (error is null)
+    {
+        <p class="text-muted">Loading…</p>
+    }
+}
+else
+{
+    <div class="row mb-4">
+        <div class="col-sm-6 col-lg-3 mb-3">
+            <div class="card"><div class="card-body">
+                <div class="text-muted small">Categories</div>
+                <div class="h3 mb-0">@categories.Count</div>
+            </div></div>
+        </div>
+        <div class="col-sm-6 col-lg-3 mb-3">
+            <div class="card"><div class="card-body">
+                <div class="text-muted small">@(includeHistory ? "Events" : "Upcoming events")</div>
+                <div class="h3 mb-0">@categories.Sum(c => c.Events.Count)</div>
+            </div></div>
+        </div>
+    </div>
+
+    @if (categories.Count == 0)
+    {
+        <p>No categories yet. <a href="categories">Create the first one</a>.</p>
+    }
+
+    @foreach (var category in categories)
+    {
+        <section class="mb-4">
+            <h2 class="h5">@category.Name <span class="badge badge-secondary">@category.Events.Count</span></h2>
+            @if (category.Events.Count == 0)
+            {
+                <p class="text-muted small">No @(includeHistory ? "" : "upcoming ")events.</p>
+            }
+            else
+            {
+                <ul class="list-group">
+                    @foreach (var item in category.Events.OrderBy(e => e.Date))
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <a href="events/@item.EventId">@item.Name</a>
+                            <span class="text-muted">@item.Date.ToString("f")</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+}
+
+@code {
+    private List<CategoryEventListVm> categories;
+    private bool includeHistory;
+    private Exception error;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task ToggleHistoryAsync(ChangeEventArgs e)
+    {
+        includeHistory = e.Value is true;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        error = null;
+        try
+        {
+            categories = await Api.GetCategoriesWithEventsAsync(includeHistory);
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+    }
+}

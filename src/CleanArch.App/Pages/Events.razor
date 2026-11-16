@@ -1,0 +1,124 @@
+@page "/events"
+@attribute [Authorize]
+@inject ApiClient Api
+@inject IJSRuntime JS
+
+<PageTitle>Events · CleanArch</PageTitle>
+
+<div class="page-header">
+    <h1>Events</h1>
+    <div>
+        <button class="btn btn-outline-secondary mr-2" @onclick="ExportAsync" disabled="@exporting">
+            <span class="oi oi-data-transfer-download" aria-hidden="true"></span>
+            @(exporting ? "Exporting…" : "Export CSV")
+        </button>
+        <a class="btn btn-primary" href="events/new">
+            <span class="oi oi-plus" aria-hidden="true"></span> New event
+        </a>
+    </div>
+</div>
+
+<ErrorAlert Error="error" />
+
+@if (events is null)
+{
+    @if (error is null)
+    {
+        <p class="text-muted">Loading…</p>
+    }
+}
+else if (events.Count == 0)
+{
+    <p>No events yet. <a href="events/new">Create one</a>.</p>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Date</th>
+                    <th scope="col" class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in events.OrderBy(e => e.Date))
+                {
+                    <tr>
+                        <td><a href="events/@item.EventId">@item.Name</a></td>
+                        <td>@item.Date.ToString("f")</td>
+                        <td class="text-right text-nowrap">
+                            @if (confirmDeleteId == item.EventId)
+                            {
+                                <span class="mr-2">Delete this event?</span>
+                                <button class="btn btn-sm btn-danger mr-1" @onclick="() => DeleteAsync(item.EventId)">Delete</button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => confirmDeleteId = null">Cancel</button>
+                            }
+                            else
+                            {
+                                <a class="btn btn-sm btn-outline-primary mr-1" href="events/@item.EventId/edit">Edit</a>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => confirmDeleteId = item.EventId">Delete</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<EventListVm> events;
+    private Guid? confirmDeleteId;
+    private Exception error;
+    private bool exporting;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            events = await Api.GetEventsAsync();
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+    }
+
+    private async Task DeleteAsync(Guid id)
+    {
+        error = null;
+        confirmDeleteId = null;
+        try
+        {
+            await Api.DeleteEventAsync(id);
+            await LoadAsync();
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+    }
+
+    private async Task ExportAsync()
+    {
+        exporting = true;
+        error = null;
+        try
+        {
+            var file = await Api.ExportEventsAsync();
+            await JS.InvokeVoidAsync("cleanArch.downloadFile", file.FileName, file.ContentType, Convert.ToBase64String(file.Content));
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+        finally
+        {
+            exporting = false;
+        }
+    }
+}

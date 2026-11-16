@@ -1,5 +1,6 @@
-# Local stack: SQL Server + API.
+# Local stack: SQL Server + API + Blazor UI.
 #   docker compose up --build
+#   UI:      http://localhost:8081
 #   Swagger: http://localhost:8080/swagger
 # Set SA_PASSWORD in your shell or a .env file to override the development default.
 
@@ -37,6 +38,20 @@ services:
       HealthChecks__SelfUri: "http://localhost:8080/healthz"
     ports:
       - "8080:8080"
+
+  web:
+    build:
+      context: .
+      dockerfile: src/CleanArch.App/Dockerfile
+    image: cleanarch-web
+    depends_on:
+      - api
+    environment:
+      # The browser calls the API directly, so this is the API's address as seen from the host.
+      # http://localhost:8081 is in the API's CORS:AllowedOrigins.
+      API_BASE_URL: "http://localhost:8080/"
+    ports:
+      - "8081:80"
 
 volumes:
   sqlserver-data:

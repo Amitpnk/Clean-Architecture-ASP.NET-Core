@@ -1,0 +1,106 @@
+@page "/register"
+@inject ApiClient Api
+
+<PageTitle>Register · CleanArch</PageTitle>
+
+<div class="auth-card">
+    <h1>Create an account</h1>
+
+    @if (resultMessage is not null)
+    {
+        <div class="alert alert-success" role="status">
+            <p class="mb-2">Your account was created. Confirm your email address before signing in.</p>
+            @if (confirmationUrl is not null)
+            {
+                @* The API returns the confirmation link in its response (and emails it when EnableEmailService is on). *@
+                <a class="btn btn-success btn-sm" href="@confirmationUrl">Confirm my account</a>
+            }
+            else
+            {
+                <p class="mb-0 small">@resultMessage</p>
+            }
+        </div>
+        <p><a href="login">Go to sign in</a></p>
+    }
+    else
+    {
+        <ErrorAlert Error="error" />
+
+        <EditForm Model="model" OnValidSubmit="RegisterAsync" FormName="register">
+            <DataAnnotationsValidator />
+
+            <div class="form-row">
+                <div class="form-group col-sm-6">
+                    <label for="firstName">First name</label>
+                    <InputText id="firstName" class="form-control" autocomplete="given-name" @bind-Value="model.FirstName" />
+                    <ValidationMessage For="() => model.FirstName" />
+                </div>
+                <div class="form-group col-sm-6">
+                    <label for="lastName">Last name</label>
+                    <InputText id="lastName" class="form-control" autocomplete="family-name" @bind-Value="model.LastName" />
+                    <ValidationMessage For="() => model.LastName" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <InputText id="email" type="email" class="form-control" autocomplete="email" @bind-Value="model.Email" />
+                <ValidationMessage For="() => model.Email" />
+            </div>
+
+            <div class="form-group">
+                <label for="userName">User name</label>
+                <InputText id="userName" class="form-control" autocomplete="username" @bind-Value="model.UserName" />
+                <small class="form-text text-muted">At least 6 characters.</small>
+                <ValidationMessage For="() => model.UserName" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" type="password" class="form-control" autocomplete="new-password" @bind-Value="model.Password" />
+                <small class="form-text text-muted">At least 6 characters, with upper and lower case letters, a digit and a symbol.</small>
+                <ValidationMessage For="() => model.Password" />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" disabled="@busy">
+                @(busy ? "Creating account…" : "Register")
+            </button>
+        </EditForm>
+
+        <p class="mt-3">Already registered? <a href="login">Sign in</a></p>
+    }
+</div>
+
+@code {
+    private readonly RegisterModel model = new();
+    private Exception error;
+    private bool busy;
+    private string resultMessage;
+    private string confirmationUrl;
+
+    private async Task RegisterAsync()
+    {
+        busy = true;
+        error = null;
+        try
+        {
+            resultMessage = await Api.RegisterAsync(model);
+            confirmationUrl = ExtractUrl(resultMessage);
+        }
+        catch (ApiRequestException ex)
+        {
+            error = ex;
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    // The API's message ends with the confirmation URL ("... by visiting this URL https://...").
+    private static string ExtractUrl(string message)
+    {
+        var start = message?.IndexOf("http", StringComparison.OrdinalIgnoreCase) ?? -1;
+        return start < 0 ? null : message[start..].Trim();
+    }
+}
