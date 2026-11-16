@@ -1,7 +1,6 @@
-﻿namespace CleanArch.Domain.Services.Authentication
+namespace CleanArch.Domain.Services.Authentication;
+
+public class RegistrationResponse
 {
-    public class RegistrationResponse
-    {
-        public string UserId { get; set; }
-    }
+    public string UserId { get; set; }
 }

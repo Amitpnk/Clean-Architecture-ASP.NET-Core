@@ -1,7 +1,6 @@
-﻿namespace CleanArch.Domain.Enum
+namespace CleanArch.Domain.Enum;
+
+public enum FeatureManagement
 {
-    public enum FeatureManagement
-    {
-        EnableEmailService
-    }
+    EnableEmailService
 }

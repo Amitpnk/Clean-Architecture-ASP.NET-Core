@@ -1,7 +1,6 @@
-﻿namespace CleanArch.Domain.Common
+namespace CleanArch.Domain.Common;
+
+public interface IHasKey<T>
 {
-    public interface IHasKey<T>
-    {
-        T Id { get; set; }
-    }
+    T Id { get; set; }
 }

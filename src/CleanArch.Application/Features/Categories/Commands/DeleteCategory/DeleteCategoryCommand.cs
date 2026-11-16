@@ -1,10 +1,8 @@
-﻿using MediatR;
-using System;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Categories.Commands.DeleteCategory
+namespace CleanArch.Application.Features.Categories.Commands.DeleteCategory;
+
+public class DeleteCategoryCommand : ICommand
 {
-    public class DeleteCategoryCommand : IRequest
-    {
-        public Guid CategoryId { get; set; }
-    }
+    public Guid CategoryId { get; set; }
 }

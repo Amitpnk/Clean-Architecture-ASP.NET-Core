@@ -1,21 +1,58 @@
 name: .NET Core
 
-on: [push]
+on:
+  push:
+  pull_request:
+    branches: [ develop, main, master ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        configuration: [ Debug, Release ]
+
     steps:
-    - uses: actions/checkout@v2
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 5.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build --configuration Release --no-restore
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # SDK version comes from global.json (10.0.x, latest feature band).
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      # NuGet audit runs here; vulnerable packages fail the build (see Directory.Build.props).
+      - name: Restore
+        run: dotnet restore CleanArch.sln
+
+      - name: Build
+        run: dotnet build CleanArch.sln --no-restore --configuration ${{ matrix.configuration }}
+
+      - name: Test
+        run: >
+          dotnet test CleanArch.sln --no-build --configuration ${{ matrix.configuration }}
+          --logger "trx;LogFilePrefix=${{ matrix.configuration }}"
+          --collect "XPlat Code Coverage"
+          --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.configuration }}
+          path: TestResults
+
+      - name: Check EF Core migrations are up to date
+        if: matrix.configuration == 'Debug'
+        run: |
+          dotnet tool restore
+          dotnet ef migrations has-pending-model-changes \
+            --project src/CleanArch.Persistence \
+            --startup-project src/CleanArch.Api \
+            --context ApplicationDbContext \
+            --no-build

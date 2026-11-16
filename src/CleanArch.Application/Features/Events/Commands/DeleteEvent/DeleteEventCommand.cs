@@ -1,10 +1,8 @@
-﻿using MediatR;
-using System;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Events.Commands.DeleteEvent
+namespace CleanArch.Application.Features.Events.Commands.DeleteEvent;
+
+public class DeleteEventCommand : ICommand
 {
-    public class DeleteEventCommand : IRequest
-    {
-        public Guid EventId { get; set; }
-    }
+    public Guid EventId { get; set; }
 }

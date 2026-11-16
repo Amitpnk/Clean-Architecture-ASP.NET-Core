@@ -1,37 +1,35 @@
-﻿using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace CleanArch.CrossCuttingConcerns.Utility
+namespace CleanArch.CrossCuttingConcerns.Utility;
+
+/// <summary>Documents actions marked with <see cref="FileResultContentTypeAttribute"/> as returning a binary file.</summary>
+public class FileResultContentTypeOperationFilter : IOperationFilter
 {
-    public class FileResultContentTypeOperationFilter : IOperationFilter
+    public void Apply(OpenApiOperation operation, OperationFilterContext context)
     {
-        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+        var requestAttribute = context.MethodInfo.GetCustomAttributes(typeof(FileResultContentTypeAttribute), false)
+            .Cast<FileResultContentTypeAttribute>()
+            .FirstOrDefault();
+
+        if (requestAttribute == null) return;
+
+        operation.Responses ??= new OpenApiResponses();
+        operation.Responses.Clear();
+        operation.Responses.Add("200", new OpenApiResponse
         {
-            var requestAttribute = context.MethodInfo.GetCustomAttributes(typeof(FileResultContentTypeAttribute), false)
-                .Cast<FileResultContentTypeAttribute>()
-                .FirstOrDefault();
-
-            if (requestAttribute == null) return;
-
-            operation.Responses.Clear();
-            operation.Responses.Add("200", new OpenApiResponse
+            Description = "File",
+            Content = new Dictionary<string, IOpenApiMediaType>
             {
-                Content = new Dictionary<string, OpenApiMediaType>
+                [requestAttribute.ContentType] = new OpenApiMediaType
                 {
+                    Schema = new OpenApiSchema
                     {
-                        requestAttribute.ContentType, new OpenApiMediaType
-                        {
-                            Schema = new OpenApiSchema
-                            {
-                                Type = "string",
-                                Format = "binary"
-                            }
-                        }
+                        Type = JsonSchemaType.String,
+                        Format = "binary"
                     }
                 }
-            });
-        }
+            }
+        });
     }
 }

@@ -1,10 +1,8 @@
-﻿using CleanArch.Application.Features.Events.Queries.GetEventsExport;
-using System.Collections.Generic;
+using CleanArch.Application.Features.Events.Queries.GetEventsExport;
 
-namespace CleanArch.Application.Contracts.Infrastructure
+namespace CleanArch.Application.Contracts.Infrastructure;
+
+public interface ICsvExporter
 {
-    public interface ICsvExporter
-    {
-        byte[] ExportEventsToCsv(List<EventExportDto> eventExportDtos);
-    }
+    byte[] ExportEventsToCsv(List<EventExportDto> eventExportDtos);
 }

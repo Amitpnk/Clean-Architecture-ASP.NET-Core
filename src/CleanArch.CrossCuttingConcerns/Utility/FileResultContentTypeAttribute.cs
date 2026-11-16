@@ -1,15 +1,7 @@
-﻿using System;
+namespace CleanArch.CrossCuttingConcerns.Utility;
 
-namespace CleanArch.CrossCuttingConcerns.Utility
+[AttributeUsage(AttributeTargets.Method)]
+public class FileResultContentTypeAttribute(string contentType) : Attribute
 {
-    [AttributeUsage(AttributeTargets.Method)]
-    public class FileResultContentTypeAttribute : Attribute
-    {
-        public FileResultContentTypeAttribute(string contentType)
-        {
-            ContentType = contentType;
-        }
-
-        public string ContentType { get; }
-    }
+    public string ContentType { get; } = contentType;
 }

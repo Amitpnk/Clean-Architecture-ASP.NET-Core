@@ -1,10 +1,8 @@
-﻿using MediatR;
-using System.Collections.Generic;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Events.Queries.GetEventsList
+namespace CleanArch.Application.Features.Events.Queries.GetEventsList;
+
+public class GetEventsListQuery : IQuery<List<EventListVm>>
 {
-    public class GetEventsListQuery : IRequest<List<EventListVm>>
-    {
 
-    }
 }

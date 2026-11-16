@@ -1,10 +1,8 @@
-﻿using MediatR;
-using System.Collections.Generic;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesList
+namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesList;
+
+public class GetCategoriesListQuery : IQuery<List<CategoryListVm>>
 {
-    public class GetCategoriesListQuery : IRequest<List<CategoryListVm>>
-    {
 
-    }
 }

@@ -1,45 +1,27 @@
-﻿using AutoMapper;
 using CleanArch.Application.Contracts.Persistence;
+using CleanArch.Application.CQRS;
 using CleanArch.Application.Exceptions;
 using CleanArch.Domain.Entities;
-using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
+using MapsterMapper;
 
-namespace CleanArch.Application.Features.Categories.Commands.UpdateCategory
+namespace CleanArch.Application.Features.Categories.Commands.UpdateCategory;
+
+public class UpdateCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
+    : CommandHandler<UpdateCategoryCommand>
 {
-    public class UpdateCategoryCommandHandler : IRequestHandler<UpdateCategoryCommand>
+    protected override async Task HandleAsync(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
-        private readonly IGenericRepositoryAsync<Category> _categoryRepository;
-        private readonly IMapper _mapper;
+        var categoryToUpdate = await categoryRepository.GetByIdAsync(request.CategoryId)
+            ?? throw new NotFoundException(nameof(Category), request.CategoryId);
 
-        public UpdateCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
-        {
-            _mapper = mapper;
-            _categoryRepository = categoryRepository;
-        }
+        var validator = new UpdateCategoryCommandValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
-        public async Task<Unit> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
-        {
+        if (validationResult.Errors.Count > 0)
+            throw new ValidationException(validationResult);
 
-            var categoryToUpdate = await _categoryRepository.GetByIdAsync(request.CategoryId);
+        mapper.Map(request, categoryToUpdate);
 
-            if (categoryToUpdate == null)
-            {
-                throw new NotFoundException(nameof(Category), request.CategoryId);
-            }
-
-            var validator = new UpdateCategoryCommandValidator();
-            var validationResult = await validator.ValidateAsync(request);
-
-            if (validationResult.Errors.Count > 0)
-                throw new ValidationException(validationResult);
-
-            _mapper.Map(request, categoryToUpdate, typeof(UpdateCategoryCommand), typeof(Category));
-
-            await _categoryRepository.UpdateAsync(categoryToUpdate);
-
-            return Unit.Value;
-        }
+        await categoryRepository.UpdateAsync(categoryToUpdate);
     }
 }

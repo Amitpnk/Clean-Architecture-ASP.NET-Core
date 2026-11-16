@@ -1,38 +1,25 @@
-﻿using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Infrastructure;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
-using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Events.Queries.GetEventsExport
+namespace CleanArch.Application.Features.Events.Queries.GetEventsExport;
+
+public class GetEventsExportQueryHandler(
+    IMapper mapper,
+    IGenericRepositoryAsync<Event> eventRepository,
+    ICsvExporter csvExporter)
+    : IQueryHandler<GetEventsExportQuery, EventExportFileVm>
 {
-    public class GetEventsExportQueryHandler : IRequestHandler<GetEventsExportQuery, EventExportFileVm>
+    public async Task<EventExportFileVm> Handle(GetEventsExportQuery request, CancellationToken cancellationToken)
     {
-        private readonly IGenericRepositoryAsync<Event> _eventRepository;
-        private readonly IMapper _mapper;
-        private readonly ICsvExporter _csvExporter;
+        var allEvents = mapper.Map<List<EventExportDto>>((await eventRepository.ListAllAsync()).OrderBy(x => x.Date));
 
-        public GetEventsExportQueryHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository, ICsvExporter csvExporter)
-        {
-            _mapper = mapper;
-            _eventRepository = eventRepository;
-            _csvExporter = csvExporter;
-        }
+        var fileData = csvExporter.ExportEventsToCsv(allEvents);
 
-        public async Task<EventExportFileVm> Handle(GetEventsExportQuery request, CancellationToken cancellationToken)
-        {
-            var allEvents = _mapper.Map<List<EventExportDto>>((await _eventRepository.ListAllAsync()).OrderBy(x => x.Date));
+        var eventExportFileDto = new EventExportFileVm() { ContentType = "text/csv", Data = fileData, EventExportFileName = $"{Guid.NewGuid()}.csv" };
 
-            var fileData = _csvExporter.ExportEventsToCsv(allEvents);
-
-            var eventExportFileDto = new EventExportFileVm() { ContentType = "text/csv", Data = fileData, EventExportFileName = $"{Guid.NewGuid()}.csv" };
-
-            return eventExportFileDto;
-        }
+        return eventExportFileDto;
     }
 }

@@ -1,11 +1,8 @@
-﻿using CleanArch.Domain.Entities;
-using System;
-using System.Threading.Tasks;
+using CleanArch.Domain.Entities;
 
-namespace CleanArch.Application.Contracts.Persistence
+namespace CleanArch.Application.Contracts.Persistence;
+
+public interface IEventRepository : IGenericRepositoryAsync<Event>
 {
-    public interface IEventRepository : IGenericRepositoryAsync<Event>
-    {
-        Task<bool> IsEventNameAndDateUnique(string name, DateTime eventDate);
-    }
+    Task<bool> IsEventNameAndDateUnique(string name, DateTime eventDate);
 }

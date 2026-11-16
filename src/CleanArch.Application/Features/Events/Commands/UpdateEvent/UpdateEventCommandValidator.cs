@@ -1,16 +1,15 @@
-﻿using FluentValidation;
+using FluentValidation;
 
-namespace CleanArch.Application.Features.Events.Commands.UpdateEvent
+namespace CleanArch.Application.Features.Events.Commands.UpdateEvent;
+
+public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
 {
-    public class UpdateEventCommandValidator : AbstractValidator<UpdateEventCommand>
+    public UpdateEventCommandValidator()
     {
-        public UpdateEventCommandValidator()
-        {
-            RuleFor(p => p.Name)
-                .NotEmpty().WithMessage("{PropertyName} is required.")
-                .NotNull()
-                .MaximumLength(50).WithMessage("{PropertyName} must not exceed 50 characters.");
+        RuleFor(p => p.Name)
+            .NotEmpty().WithMessage("{PropertyName} is required.")
+            .NotNull()
+            .MaximumLength(50).WithMessage("{PropertyName} must not exceed 50 characters.");
 
-        }
     }
 }

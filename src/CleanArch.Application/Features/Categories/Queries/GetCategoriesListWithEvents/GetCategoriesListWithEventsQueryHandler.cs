@@ -1,27 +1,15 @@
-﻿using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Persistence;
-using MediatR;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents
+namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents;
+
+public class GetCategoriesListWithEventsQueryHandler(IMapper mapper, ICategoryRepository categoryRepository)
+    : IQueryHandler<GetCategoriesListWithEventsQuery, List<CategoryEventListVm>>
 {
-    public class GetCategoriesListWithEventsQueryHandler : IRequestHandler<GetCategoriesListWithEventsQuery, List<CategoryEventListVm>>
+    public async Task<List<CategoryEventListVm>> Handle(GetCategoriesListWithEventsQuery request, CancellationToken cancellationToken)
     {
-        private readonly IMapper _mapper;
-        private readonly ICategoryRepository _categoryRepository;
-
-        public GetCategoriesListWithEventsQueryHandler(IMapper mapper, ICategoryRepository categoryRepository)
-        {
-            _mapper = mapper;
-            _categoryRepository = categoryRepository;
-        }
-
-        public async Task<List<CategoryEventListVm>> Handle(GetCategoriesListWithEventsQuery request, CancellationToken cancellationToken)
-        {
-            var list = await _categoryRepository.GetCategoriesWithEvents(request.IncludeHistory);
-            return _mapper.Map<List<CategoryEventListVm>>(list);
-        }
+        var list = await categoryRepository.GetCategoriesWithEvents(request.IncludeHistory);
+        return mapper.Map<List<CategoryEventListVm>>(list);
     }
 }

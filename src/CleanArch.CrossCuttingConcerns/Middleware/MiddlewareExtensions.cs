@@ -1,11 +1,11 @@
-﻿//using System;
+//using System;
 //using System.Collections.Generic;
 //using System.Linq;
 //using System.Text;
 //using System.Threading.Tasks;
 
 //namespace CleanArch.CrossCuttingConcerns.Middleware
-//{
+//
 //    public class MiddlewareExtensions
 //    {
 //        private readonly RequestDelegate _next;
@@ -63,4 +63,4 @@
 //            return context.Response.WriteAsync(result);
 //        }
 //    }
-//}
+//

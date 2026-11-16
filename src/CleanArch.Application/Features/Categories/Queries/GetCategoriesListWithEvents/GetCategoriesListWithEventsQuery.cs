@@ -1,10 +1,8 @@
-﻿using MediatR;
-using System.Collections.Generic;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents
+namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesListWithEvents;
+
+public class GetCategoriesListWithEventsQuery : IQuery<List<CategoryEventListVm>>
 {
-    public class GetCategoriesListWithEventsQuery : IRequest<List<CategoryEventListVm>>
-    {
-        public bool IncludeHistory { get; set; }
-    }
+    public bool IncludeHistory { get; set; }
 }

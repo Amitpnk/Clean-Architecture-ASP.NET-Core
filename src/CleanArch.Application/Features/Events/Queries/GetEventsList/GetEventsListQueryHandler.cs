@@ -1,29 +1,16 @@
-﻿using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
-using MediatR;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using CleanArch.Application.CQRS;
 
-namespace CleanArch.Application.Features.Events.Queries.GetEventsList
+namespace CleanArch.Application.Features.Events.Queries.GetEventsList;
+
+public class GetEventsListQueryHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
+    : IQueryHandler<GetEventsListQuery, List<EventListVm>>
 {
-    public class GetEventsListQueryHandler : IRequestHandler<GetEventsListQuery, List<EventListVm>>
+    public async Task<List<EventListVm>> Handle(GetEventsListQuery request, CancellationToken cancellationToken)
     {
-        private readonly IGenericRepositoryAsync<Event> _eventRepository;
-        private readonly IMapper _mapper;
-
-        public GetEventsListQueryHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
-        {
-            _mapper = mapper;
-            _eventRepository = eventRepository;
-        }
-
-        public async Task<List<EventListVm>> Handle(GetEventsListQuery request, CancellationToken cancellationToken)
-        {
-            var allEvents = (await _eventRepository.ListAllAsync()).OrderBy(x => x.Date);
-            return _mapper.Map<List<EventListVm>>(allEvents);
-        }
+        var allEvents = (await eventRepository.ListAllAsync()).OrderBy(x => x.Date);
+        return mapper.Map<List<EventListVm>>(allEvents);
     }
 }

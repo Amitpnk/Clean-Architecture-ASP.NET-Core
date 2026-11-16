@@ -358,3 +358,6 @@ tempkey.jwk
 # documentation
 docs/TODO/*
 docs/bg/*
+
+# Serilog file sink output
+Logs/

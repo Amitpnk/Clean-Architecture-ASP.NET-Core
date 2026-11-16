@@ -1,13 +1,10 @@
-﻿using CleanArch.Domain.Common;
-using System;
-using System.Collections.Generic;
+using CleanArch.Domain.Common;
 
-namespace CleanArch.Domain.Entities
+namespace CleanArch.Domain.Entities;
+
+public class Category : BaseEntity<Guid>
 {
-    public class Category : BaseEntity<Guid>
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public ICollection<Event> Events { get; set; }
-    }
+    public string Name { get; set; }
+    public string Description { get; set; }
+    public ICollection<Event> Events { get; set; }
 }
