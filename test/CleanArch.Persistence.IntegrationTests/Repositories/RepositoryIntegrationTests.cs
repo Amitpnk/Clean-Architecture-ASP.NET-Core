@@ -6,32 +6,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.IntegrationTests.Repositories;
 
-public class MigrationTests : DatabaseTestBase
+public class MigrationTests(SqlServerContainer sqlServer) : DatabaseTestBase(sqlServer)
 {
-    [Test]
+    [Fact]
     public async Task Migrations_AreAllApplied()
     {
-        var pending = await DbContext.Database.GetPendingMigrationsAsync();
+        var pending = await DbContext.Database.GetPendingMigrationsAsync(CancellationToken);
 
-        Assert.That(pending, Is.Empty);
+        Assert.Empty(pending);
     }
 
-    [Test]
+    [Fact]
     public async Task Migrations_SeedApplicationAndIdentityData()
     {
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(await DbContext.Categories.CountAsync(), Is.EqualTo(3));
-            Assert.That(await DbContext.Events.CountAsync(), Is.EqualTo(4));
-            Assert.That(await DbContext.Set<IdentityRole>().CountAsync(), Is.EqualTo(4));
-            Assert.That(await DbContext.Users.CountAsync(), Is.EqualTo(2));
-        }
+        Assert.Equal(3, await DbContext.Categories.CountAsync(CancellationToken));
+        Assert.Equal(4, await DbContext.Events.CountAsync(CancellationToken));
+        Assert.Equal(4, await DbContext.Set<IdentityRole>().CountAsync(CancellationToken));
+        Assert.Equal(2, await DbContext.Users.CountAsync(CancellationToken));
     }
 }
 
-public class GenericRepositoryIntegrationTests : DatabaseTestBase
+public class GenericRepositoryIntegrationTests(SqlServerContainer sqlServer) : DatabaseTestBase(sqlServer)
 {
-    [Test]
+    [Fact]
     public async Task AddAsync_PersistsEntity_StampsAuditColumns_AndWritesAuditTrail()
     {
         var repository = new GenericRepository<Category>(DbContext);
@@ -40,20 +37,18 @@ public class GenericRepositoryIntegrationTests : DatabaseTestBase
 
         DbContext.ChangeTracker.Clear();
         var reloaded = await repository.GetByIdAsync(added.Id);
-        var audit = await DbContext.AuditTrails.SingleAsync(a => a.TableName == nameof(Category));
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(added.Id, Is.Not.EqualTo(Guid.Empty));
-            Assert.That(reloaded, Is.Not.Null);
-            Assert.That(reloaded.Name, Is.EqualTo("Workshops"));
-            Assert.That(reloaded.CreatedBy, Is.EqualTo(TestUserId));
-            Assert.That(reloaded.CreatedDate, Is.EqualTo(FixedUtcNow));
-            Assert.That(audit.Type, Is.EqualTo(AuditType.Create.ToString()));
-            Assert.That(audit.UserId, Is.EqualTo(TestUserId));
-        }
+        var audit = await DbContext.AuditTrails.SingleAsync(a => a.TableName == nameof(Category), CancellationToken);
+
+        Assert.NotEqual(Guid.Empty, added.Id);
+        Assert.NotNull(reloaded);
+        Assert.Equal("Workshops", reloaded.Name);
+        Assert.Equal(TestUserId, reloaded.CreatedBy);
+        Assert.Equal(FixedUtcNow, reloaded.CreatedDate);
+        Assert.Equal(AuditType.Create.ToString(), audit.Type);
+        Assert.Equal(TestUserId, audit.UserId);
     }
 
-    [Test]
+    [Fact]
     public async Task UpdateAsync_PersistsChanges_AndStampsModifiedColumns()
     {
         var repository = new GenericRepository<Category>(DbContext);
@@ -65,15 +60,13 @@ public class GenericRepositoryIntegrationTests : DatabaseTestBase
 
         DbContext.ChangeTracker.Clear();
         var reloaded = await repository.GetByIdAsync(category.Id);
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(reloaded.Name, Is.EqualTo("After"));
-            Assert.That(reloaded.LastModifiedBy, Is.EqualTo(TestUserId));
-            Assert.That(reloaded.LastModifiedDate, Is.EqualTo(FixedUtcNow));
-        }
+
+        Assert.Equal("After", reloaded.Name);
+        Assert.Equal(TestUserId, reloaded.LastModifiedBy);
+        Assert.Equal(FixedUtcNow, reloaded.LastModifiedDate);
     }
 
-    [Test]
+    [Fact]
     public async Task DeleteAsync_RemovesEntity()
     {
         var repository = new GenericRepository<Category>(DbContext);
@@ -83,41 +76,39 @@ public class GenericRepositoryIntegrationTests : DatabaseTestBase
         await repository.DeleteAsync(category);
 
         DbContext.ChangeTracker.Clear();
-        Assert.That(await repository.GetByIdAsync(category.Id), Is.Null);
+        Assert.Null(await repository.GetByIdAsync(category.Id));
     }
 
-    [Test]
+    [Fact]
     public async Task GetPagedReponseAsync_ReturnsRequestedPage()
     {
         var repository = new GenericRepository<Category>(DbContext);
 
         var page = await repository.GetPagedReponseAsync(page: 2, size: 2);
 
-        Assert.That(page, Has.Count.EqualTo(1));
+        Assert.Single(page);
     }
 }
 
-public class CategoryRepositoryIntegrationTests : DatabaseTestBase
+public class CategoryRepositoryIntegrationTests(SqlServerContainer sqlServer) : DatabaseTestBase(sqlServer)
 {
-    [Test]
-    public async Task IsCategoryName_MatchesExistingName()
+    [Theory]
+    [InlineData("Concert", true)]
+    [InlineData("Unknown", false)]
+    public async Task IsCategoryName_MatchesExistingNames(string name, bool expected)
     {
         var repository = new CategoryRepository(DbContext);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(await repository.IsCategoryName("Concert"), Is.True);
-            Assert.That(await repository.IsCategoryName("Unknown"), Is.False);
-        }
+        Assert.Equal(expected, await repository.IsCategoryName(name));
     }
 
-    [Test]
+    [Fact]
     public async Task GetCategoriesWithEvents_ExcludesPastEvents_UnlessHistoryRequested()
     {
-        var category = await DbContext.Categories.FirstAsync();
+        var category = await DbContext.Categories.FirstAsync(CancellationToken);
         DbContext.Events.Add(new Event { Name = "Past", Date = DateTime.Today.AddDays(-1), CategoryId = category.Id });
         DbContext.Events.Add(new Event { Name = "Future", Date = DateTime.Today.AddDays(1), CategoryId = category.Id });
-        await DbContext.SaveChangesAsync();
+        await DbContext.SaveChangesAsync(CancellationToken);
         DbContext.ChangeTracker.Clear();
 
         var repository = new CategoryRepository(DbContext);
@@ -125,27 +116,21 @@ public class CategoryRepositoryIntegrationTests : DatabaseTestBase
         var upcoming = (await repository.GetCategoriesWithEvents(includePassedEvents: false)).Single(c => c.Id == category.Id);
         var all = (await repository.GetCategoriesWithEvents(includePassedEvents: true)).Single(c => c.Id == category.Id);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(upcoming.Events.Select(e => e.Name), Does.Not.Contain("Past"));
-            Assert.That(upcoming.Events.Select(e => e.Name), Does.Contain("Future"));
-            Assert.That(all.Events.Select(e => e.Name), Does.Contain("Past"));
-        }
+        Assert.DoesNotContain("Past", upcoming.Events.Select(e => e.Name));
+        Assert.Contains("Future", upcoming.Events.Select(e => e.Name));
+        Assert.Contains("Past", all.Events.Select(e => e.Name));
     }
 }
 
-public class EventRepositoryIntegrationTests : DatabaseTestBase
+public class EventRepositoryIntegrationTests(SqlServerContainer sqlServer) : DatabaseTestBase(sqlServer)
 {
-    [Test]
+    [Fact]
     public async Task IsEventNameAndDateUnique_TranslatesDateComparison_OnSqlServer()
     {
-        var seeded = await DbContext.Events.FirstAsync();
+        var seeded = await DbContext.Events.FirstAsync(CancellationToken);
         var repository = new EventRepository(DbContext);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.Date.AddHours(3)), Is.True);
-            Assert.That(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.AddDays(1)), Is.False);
-        }
+        Assert.True(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.Date.AddHours(3)));
+        Assert.False(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.AddDays(1)));
     }
 }

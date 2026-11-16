@@ -4,41 +4,42 @@ using CleanArch.Domain.Services.Authentication;
 
 namespace CleanArch.Api.IntegrationTests.Endpoints;
 
-public class AccountEndpointTests
+public class AccountEndpointTests(CleanArchApiFactory factory)
 {
-    [Test]
+    private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+    [Fact]
     public async Task Authenticate_WithSeededUser_ReturnsJwt()
     {
-        using var client = ApiTestFixture.CreateAnonymousClient();
+        using var client = factory.CreateClient();
 
         var response = await client.PostAsJsonAsync("/api/account/authenticate",
-            new AuthenticationRequest { Email = ApiTestFixture.SeededEmail, Password = ApiTestFixture.SeededPassword });
+            new AuthenticationRequest { Email = CleanArchApiFactory.SeededEmail, Password = CleanArchApiFactory.SeededPassword },
+            CancellationToken);
 
         response.EnsureSuccessStatusCode();
-        var body = await response.Content.ReadFromJsonAsync<BaseResponse<AuthenticationResponse>>();
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(body!.Success, Is.True);
-            Assert.That(body.Data.JWToken, Is.Not.Null.And.Not.Empty);
-            Assert.That(body.Data.Roles, Does.Contain("SuperAdmin"));
-        }
+        var body = await response.Content.ReadFromJsonAsync<BaseResponse<AuthenticationResponse>>(CancellationToken);
+        Assert.True(body!.Success);
+        Assert.False(string.IsNullOrEmpty(body.Data.JWToken));
+        Assert.Contains("SuperAdmin", body.Data.Roles);
     }
 
-    [Test]
+    [Fact]
     public async Task Authenticate_WithWrongPassword_Fails()
     {
-        using var client = ApiTestFixture.CreateAnonymousClient();
+        using var client = factory.CreateClient();
 
         var response = await client.PostAsJsonAsync("/api/account/authenticate",
-            new AuthenticationRequest { Email = ApiTestFixture.SeededEmail, Password = "wrong-password" });
+            new AuthenticationRequest { Email = CleanArchApiFactory.SeededEmail, Password = "wrong-password" },
+            CancellationToken);
 
-        Assert.That(response.IsSuccessStatusCode, Is.False);
+        Assert.False(response.IsSuccessStatusCode);
     }
 
-    [Test]
+    [Fact]
     public async Task Register_CreatesUser_ThatCannotSignInUntilConfirmed()
     {
-        using var client = ApiTestFixture.CreateAnonymousClient();
+        using var client = factory.CreateClient();
         var suffix = Guid.NewGuid().ToString("N")[..8];
         var registration = new RegistrationRequest
         {
@@ -49,14 +50,11 @@ public class AccountEndpointTests
             Password = "Password@123"
         };
 
-        var registered = await client.PostAsJsonAsync("/api/account/register", registration);
+        var registered = await client.PostAsJsonAsync("/api/account/register", registration, CancellationToken);
         var signIn = await client.PostAsJsonAsync("/api/account/authenticate",
-            new AuthenticationRequest { Email = registration.Email, Password = registration.Password });
+            new AuthenticationRequest { Email = registration.Email, Password = registration.Password }, CancellationToken);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(registered.IsSuccessStatusCode, Is.True, await registered.Content.ReadAsStringAsync());
-            Assert.That(signIn.IsSuccessStatusCode, Is.False);
-        }
+        Assert.True(registered.IsSuccessStatusCode, await registered.Content.ReadAsStringAsync(CancellationToken));
+        Assert.False(signIn.IsSuccessStatusCode);
     }
 }

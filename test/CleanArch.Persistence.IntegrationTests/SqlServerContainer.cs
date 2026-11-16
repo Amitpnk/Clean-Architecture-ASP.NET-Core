@@ -1,25 +1,27 @@
+using CleanArch.Persistence.IntegrationTests;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers.MsSql;
 
+// One container for the whole assembly. Tests share one database (isolated by rolled-back transactions),
+// so xunit.runner.json turns off parallel runs: concurrent transactions would block on each other's rows.
+[assembly: AssemblyFixture(typeof(SqlServerContainer))]
+
 namespace CleanArch.Persistence.IntegrationTests;
 
 /// <summary>
-/// Starts one SQL Server container for the whole assembly and applies the EF Core migrations to it,
-/// so every test runs against the real schema the API ships with. Requires a running Docker engine.
+/// Starts a SQL Server container and applies the EF Core migrations to it, so every test runs against
+/// the real schema the API ships with. Requires a running Docker engine.
 /// </summary>
-[SetUpFixture]
-public sealed class SqlServerContainer
+public sealed class SqlServerContainer : IAsyncLifetime
 {
-    private MsSqlContainer _container;
+    private readonly MsSqlContainer _container =
+        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
 
-    public static string ConnectionString { get; private set; }
+    public string ConnectionString { get; private set; }
 
-    [OneTimeSetUp]
-    public async Task StartAsync()
+    public async ValueTask InitializeAsync()
     {
-        _container = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
-
         await _container.StartAsync();
 
         ConnectionString = new SqlConnectionStringBuilder(_container.GetConnectionString())
@@ -31,12 +33,5 @@ public sealed class SqlServerContainer
         await context.Database.MigrateAsync();
     }
 
-    [OneTimeTearDown]
-    public async Task StopAsync()
-    {
-        if (_container is not null)
-        {
-            await _container.DisposeAsync();
-        }
-    }
+    public ValueTask DisposeAsync() => _container.DisposeAsync();
 }

@@ -7,10 +7,11 @@ using Microsoft.EntityFrameworkCore.Storage;
 namespace CleanArch.Persistence.IntegrationTests;
 
 /// <summary>
-/// Gives each test a fresh <see cref="ApplicationDbContext"/> inside a transaction that is rolled back
-/// afterwards, so tests share the migrated database without seeing each other's writes.
+/// xUnit creates a new instance per test, so each test gets a fresh <see cref="ApplicationDbContext"/>
+/// inside a transaction that is rolled back afterwards: tests share the migrated database without
+/// seeing each other's writes.
 /// </summary>
-public abstract class DatabaseTestBase
+public abstract class DatabaseTestBase(SqlServerContainer sqlServer) : IAsyncLifetime
 {
     protected const string TestUserId = "integration-test-user";
     protected static readonly DateTime FixedUtcNow = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
@@ -19,19 +20,20 @@ public abstract class DatabaseTestBase
 
     protected ApplicationDbContext DbContext { get; private set; }
 
-    [SetUp]
-    public async Task BeginTransactionAsync()
+    protected static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+    public async ValueTask InitializeAsync()
     {
-        DbContext = CreateContext(SqlServerContainer.ConnectionString);
-        _transaction = await DbContext.Database.BeginTransactionAsync();
+        DbContext = CreateContext(sqlServer.ConnectionString);
+        _transaction = await DbContext.Database.BeginTransactionAsync(CancellationToken);
     }
 
-    [TearDown]
-    public async Task RollbackAsync()
+    public async ValueTask DisposeAsync()
     {
         await _transaction.RollbackAsync();
         await _transaction.DisposeAsync();
         await DbContext.DisposeAsync();
+        GC.SuppressFinalize(this);
     }
 
     // No EnableRetryOnFailure here: the retrying execution strategy rejects user-initiated transactions.

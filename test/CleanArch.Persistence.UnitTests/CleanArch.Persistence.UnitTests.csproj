@@ -12,6 +12,7 @@
     <PackageReference Include="NUnit.Analyzers" PrivateAssets="all" />
     <PackageReference Include="coverlet.collector" PrivateAssets="all" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup>

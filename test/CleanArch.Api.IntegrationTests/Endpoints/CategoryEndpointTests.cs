@@ -5,62 +5,61 @@ using CleanArch.Application.Features.Categories.Queries.GetCategoriesList;
 
 namespace CleanArch.Api.IntegrationTests.Endpoints;
 
-public class CategoryEndpointTests
+public class CategoryEndpointTests(CleanArchApiFactory factory)
 {
     private const string CategoriesUrl = "/api/v1/Category";
 
-    [Test]
+    private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
+
+    [Fact]
     public async Task GetAllCategories_WithoutToken_Returns401()
     {
-        using var client = ApiTestFixture.CreateAnonymousClient();
+        using var client = factory.CreateClient();
 
-        var response = await client.GetAsync($"{CategoriesUrl}/all");
+        var response = await client.GetAsync($"{CategoriesUrl}/all", CancellationToken);
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
-    [Test]
+    [Fact]
     public async Task GetAllCategories_ReturnsSeededCategories()
     {
-        using var client = await ApiTestFixture.CreateAuthenticatedClientAsync();
+        using var client = await factory.CreateAuthenticatedClientAsync(CancellationToken);
 
-        var categories = await client.GetFromJsonAsync<List<CategoryListVm>>($"{CategoriesUrl}/all");
+        var categories = await client.GetFromJsonAsync<List<CategoryListVm>>($"{CategoriesUrl}/all", CancellationToken);
 
-        Assert.That(categories!.Select(c => c.Name), Is.SupersetOf(new[] { "Concert", "Musical", "Conference" }));
+        Assert.Subset(categories!.Select(c => c.Name).ToHashSet(), new HashSet<string> { "Concert", "Musical", "Conference" });
     }
 
-    [Test]
+    [Fact]
     public async Task CreateCategory_PersistsCategory_AndRejectsDuplicateName()
     {
-        using var client = await ApiTestFixture.CreateAuthenticatedClientAsync();
+        using var client = await factory.CreateAuthenticatedClientAsync(CancellationToken);
         var name = $"Cat-{Guid.NewGuid():N}"[..20];
 
-        var first = await client.PostAsJsonAsync(CategoriesUrl, new CreateCategoryCommand { Name = name });
+        var first = await client.PostAsJsonAsync(CategoriesUrl, new CreateCategoryCommand { Name = name }, CancellationToken);
         first.EnsureSuccessStatusCode();
-        var created = await first.Content.ReadFromJsonAsync<CreateCategoryCommandResponse>();
+        var created = await first.Content.ReadFromJsonAsync<CreateCategoryCommandResponse>(CancellationToken);
 
-        var categories = await client.GetFromJsonAsync<List<CategoryListVm>>($"{CategoriesUrl}/all");
+        var categories = await client.GetFromJsonAsync<List<CategoryListVm>>($"{CategoriesUrl}/all", CancellationToken);
 
-        var duplicate = await client.PostAsJsonAsync(CategoriesUrl, new CreateCategoryCommand { Name = name });
-        var duplicateBody = await duplicate.Content.ReadFromJsonAsync<CreateCategoryCommandResponse>();
+        var duplicate = await client.PostAsJsonAsync(CategoriesUrl, new CreateCategoryCommand { Name = name }, CancellationToken);
+        var duplicateBody = await duplicate.Content.ReadFromJsonAsync<CreateCategoryCommandResponse>(CancellationToken);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(created!.Success, Is.True);
-            Assert.That(created.Category.CategoryId, Is.Not.EqualTo(Guid.Empty));
-            Assert.That(categories!.Select(c => c.Name), Does.Contain(name));
-            Assert.That(duplicateBody!.Success, Is.False);
-            Assert.That(duplicateBody.ValidationErrors, Is.Not.Empty);
-        }
+        Assert.True(created!.Success);
+        Assert.NotEqual(Guid.Empty, created.Category.CategoryId);
+        Assert.Contains(name, categories!.Select(c => c.Name));
+        Assert.False(duplicateBody!.Success);
+        Assert.NotEmpty(duplicateBody.ValidationErrors);
     }
 
-    [Test]
-    public async Task GetCategoriesWithEvents_ReturnsCategoriesWithTheirEvents()
+    [Fact]
+    public async Task GetCategoriesWithEvents_ReturnsOk()
     {
-        using var client = await ApiTestFixture.CreateAuthenticatedClientAsync();
+        using var client = await factory.CreateAuthenticatedClientAsync(CancellationToken);
 
-        var response = await client.GetAsync($"{CategoriesUrl}/allwithevents?includeHistory=true");
+        var response = await client.GetAsync($"{CategoriesUrl}/allwithevents?includeHistory=true", CancellationToken);
 
-        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 }

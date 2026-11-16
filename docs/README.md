@@ -110,8 +110,8 @@ Monitoring tool
 - [ ] Kibana dashboard  
 
 Testing
-- [x] Unit testing (NUnit 4, Moq, EF Core InMemory)
-- [x] Integration testing with Testcontainers (real SQL Server in Docker; `WebApplicationFactory` for the API)
+- [x] Unit testing for every layer (NUnit 4, Moq, EF Core InMemory)
+- [x] Integration testing (xUnit v3 + Testcontainers: real SQL Server in Docker; `WebApplicationFactory` for the API)
 
 Caching
 - [ ] Inmemory Caching
@@ -143,15 +143,23 @@ This starts SQL Server 2022 and the API; migrations and seed data are applied on
 Swagger is at http://localhost:8080/swagger and the health check UI at http://localhost:8080/healthcheck-ui.
 Sign in with `superadmin@gmail.com` / `Password@123`. Override the SQL `sa` password with the `SA_PASSWORD` environment variable.
 
-## Integration tests
+## Tests
 
-`test/CleanArch.Persistence.IntegrationTests` (repositories, migrations, auditing) and
-`test/CleanArch.Api.IntegrationTests` (HTTP endpoints, JWT auth) use [Testcontainers](https://dotnet.testcontainers.org/)
-to start a throwaway SQL Server container per test assembly, so Docker must be running:
+| Project | Framework | Covers |
+| --- | --- | --- |
+| `CleanArch.Domain.UnitTests` | NUnit | `BaseResponse`, `ValueObject`, entities, request validation attributes |
+| `CleanArch.Application.UnitTests` | NUnit | Every command/query handler and validator, CQRS dispatcher, mappings, exceptions, exception middleware |
+| `CleanArch.Infrastructure.UnitTests` | NUnit | CSV export, logged-in user, clock, service registration |
+| `CleanArch.Persistence.UnitTests` | NUnit | Repositories, audit trail, seed data, `AuthenticationService` (real Identity over EF InMemory) |
+| `CleanArch.Api.UnitTests` | NUnit | Controllers (mocked dispatcher), Swagger file-result filter |
+| `CleanArch.Persistence.IntegrationTests` | xUnit v3 | Migrations and repositories against real SQL Server |
+| `CleanArch.Api.IntegrationTests` | xUnit v3 | HTTP endpoints and JWT auth against real SQL Server |
+
+The integration tests use [Testcontainers](https://dotnet.testcontainers.org/) to start a throwaway SQL Server
+container per test assembly, so Docker must be running. To run only the unit tests:
 
 ```bash
-dotnet test test/CleanArch.Persistence.IntegrationTests
-dotnet test test/CleanArch.Api.IntegrationTests
+dotnet test CleanArch.sln --filter "FullyQualifiedName!~IntegrationTests"
 ```
 
 ## Licence Used

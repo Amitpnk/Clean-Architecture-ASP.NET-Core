@@ -69,6 +69,9 @@
     <PackageVersion Include="coverlet.collector" Version="10.1.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
     <PackageVersion Include="Testcontainers.MsSql" Version="4.16.0" />
+    <!-- Integration tests use xUnit v3; unit tests use NUnit. -->
+    <PackageVersion Include="xunit.v3" Version="4.0.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
   </ItemGroup>
 
 </Project>
