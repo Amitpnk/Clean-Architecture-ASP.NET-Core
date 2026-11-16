@@ -13,7 +13,8 @@ public class CategoryRepository(ApplicationDbContext dbContext)
         var allCategories = await _dbContext.Categories.Include(x => x.Events).ToListAsync();
         if (!includePassedEvents)
         {
-            allCategories.ForEach(p => p.Events.ToList().RemoveAll(c => c.Date < DateTime.Today));
+            // Replace the collection: removing from a ToList() copy (the previous code) filtered nothing.
+            allCategories.ForEach(p => p.Events = p.Events.Where(e => e.Date >= DateTime.Today).ToList());
         }
         return allCategories;
     }

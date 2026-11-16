@@ -1,34 +1,27 @@
-using AutoMapper;
 using CleanArch.Application.Contracts.Persistence;
+using CleanArch.Application.CQRS;
 using CleanArch.Application.Exceptions;
 using CleanArch.Domain.Entities;
-using MediatR;
+using MapsterMapper;
 
 namespace CleanArch.Application.Features.Events.Commands.UpdateEvent;
 
 public class UpdateEventCommandHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
-    : IRequestHandler<UpdateEventCommand>
+    : CommandHandler<UpdateEventCommand>
 {
-    public async Task<Unit> Handle(UpdateEventCommand request, CancellationToken cancellationToken)
+    protected override async Task HandleAsync(UpdateEventCommand request, CancellationToken cancellationToken)
     {
-
-        var eventToUpdate = await eventRepository.GetByIdAsync(request.EventId);
-
-        if (eventToUpdate == null)
-        {
-            throw new NotFoundException(nameof(Event), request.EventId);
-        }
+        var eventToUpdate = await eventRepository.GetByIdAsync(request.EventId)
+            ?? throw new NotFoundException(nameof(Event), request.EventId);
 
         var validator = new UpdateEventCommandValidator();
-        var validationResult = await validator.ValidateAsync(request);
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (validationResult.Errors.Count > 0)
             throw new ValidationException(validationResult);
 
-        mapper.Map(request, eventToUpdate, typeof(UpdateEventCommand), typeof(Event));
+        mapper.Map(request, eventToUpdate);
 
         await eventRepository.UpdateAsync(eventToUpdate);
-
-        return Unit.Value;
     }
 }

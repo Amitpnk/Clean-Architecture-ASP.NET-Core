@@ -26,6 +26,7 @@ public class IdentityContext(DbContextOptions options) : IdentityDbContext<Appli
         builder.Entity<IdentityUserRole<string>>(entity =>
         {
             entity.ToTable("UserRoles", "Identity");
+            entity.HasKey(ur => new { ur.UserId, ur.RoleId });
         });
 
         builder.Entity<IdentityUserClaim<string>>(entity =>
@@ -36,6 +37,7 @@ public class IdentityContext(DbContextOptions options) : IdentityDbContext<Appli
         builder.Entity<IdentityUserLogin<string>>(entity =>
         {
             entity.ToTable("UserLogins", "Identity");
+            entity.HasKey(login => new { login.LoginProvider, login.ProviderKey });
         });
 
         builder.Entity<IdentityRoleClaim<string>>(entity =>
@@ -46,6 +48,7 @@ public class IdentityContext(DbContextOptions options) : IdentityDbContext<Appli
         builder.Entity<IdentityUserToken<string>>(entity =>
         {
             entity.ToTable("UserTokens", "Identity");
+            entity.HasKey(token => new { token.UserId, token.LoginProvider, token.Name });
         });
         #endregion
 

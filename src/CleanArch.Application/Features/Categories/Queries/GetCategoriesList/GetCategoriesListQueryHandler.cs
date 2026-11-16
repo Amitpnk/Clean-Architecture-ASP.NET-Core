@@ -1,12 +1,12 @@
-using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Categories.Queries.GetCategoriesList;
 
 public class GetCategoriesListQueryHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
-    : IRequestHandler<GetCategoriesListQuery, List<CategoryListVm>>
+    : IQueryHandler<GetCategoriesListQuery, List<CategoryListVm>>
 {
     public async Task<List<CategoryListVm>> Handle(GetCategoriesListQuery request, CancellationToken cancellationToken)
     {

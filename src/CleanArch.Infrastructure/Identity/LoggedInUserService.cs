@@ -39,4 +39,9 @@ public class LoggedInUserService(IHttpContextAccessor httpContextAccessor) : ILo
         }
     }
 
+    public string GetUserId()
+    {
+        return httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
+
 }

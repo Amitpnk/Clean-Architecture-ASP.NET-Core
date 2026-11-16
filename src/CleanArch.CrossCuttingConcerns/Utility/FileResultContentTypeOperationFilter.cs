@@ -1,8 +1,9 @@
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace CleanArch.CrossCuttingConcerns.Utility;
 
+/// <summary>Documents actions marked with <see cref="FileResultContentTypeAttribute"/> as returning a binary file.</summary>
 public class FileResultContentTypeOperationFilter : IOperationFilter
 {
     public void Apply(OpenApiOperation operation, OperationFilterContext context)
@@ -13,22 +14,22 @@ public class FileResultContentTypeOperationFilter : IOperationFilter
 
         if (requestAttribute == null) return;
 
+        operation.Responses ??= new OpenApiResponses();
         operation.Responses.Clear();
         operation.Responses.Add("200", new OpenApiResponse
         {
-            Content = new Dictionary<string, OpenApiMediaType>
+            Description = "File",
+            Content = new Dictionary<string, IOpenApiMediaType>
+            {
+                [requestAttribute.ContentType] = new OpenApiMediaType
                 {
+                    Schema = new OpenApiSchema
                     {
-                        requestAttribute.ContentType, new OpenApiMediaType
-                        {
-                            Schema = new OpenApiSchema
-                            {
-                                Type = "string",
-                                Format = "binary"
-                            }
-                        }
+                        Type = JsonSchemaType.String,
+                        Format = "binary"
                     }
                 }
+            }
         });
     }
 }

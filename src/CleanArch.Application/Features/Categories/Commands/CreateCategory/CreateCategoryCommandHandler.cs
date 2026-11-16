@@ -1,14 +1,14 @@
-using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Categories.Commands.CreateCategory;
 
 public class CreateCategoryCommandHandler(
     IMapper mapper,
     ICategoryRepository categoryRepository)
-    : IRequestHandler<CreateCategoryCommand, CreateCategoryCommandResponse>
+    : ICommandHandler<CreateCategoryCommand, CreateCategoryCommandResponse>
 {
     public async Task<CreateCategoryCommandResponse> Handle(CreateCategoryCommand request,
         CancellationToken cancellationToken)

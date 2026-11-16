@@ -47,7 +47,7 @@ Though layer architectures like onion, Hexagonal all vary somewhat in their deta
 
 ## About The Project
 
-This project provides complete solution which is built on Clean Architecture with all essentia,  feature CI/CD, best practice, testing Strategy using .NET Core.
+This project provides complete solution which is built on Clean Architecture with all essentia,  feature CI/CD, best practice, testing Strategy using .NET 10.
 
 ![image](img/clean-architecture.png)
 
@@ -63,21 +63,21 @@ Architecture Pattern
 Design Pattern
 - [x] CQRS design pattern
 - [ ] Decorator design pattern
-- [x] Mediator design pattern
+- [x] Mediator design pattern (lightweight custom CQRS dispatcher - no MediatR dependency)
 - [x] Repository design pattern
 - [x] Unit of work 
 - [x] Factory design pattern
  
 Backend
 - [x] Language: C#
-- [x] Framework: dotnet core 5, ASP.NET Core
+- [x] Framework: .NET 10 (LTS), ASP.NET Core 10
 
 UI
 - [ ] Blazor
 
 Database
 - [x] MS SQL and Inmemory DB
-- [x] DB Connectivity : Entityframework Core - Code First
+- [x] DB Connectivity : Entity Framework Core 10 - Code First (migrations included)
 
 Cloud server
 - [x] Azure (deployment script)
@@ -90,27 +90,26 @@ Service
 Feature
 - [x] Dataseeding
 - [x] Custom Exceptionn Handler
-- [x] Automapper / Mapster
+- [x] Mapster (object mapping)
 - [x] Fluent validation
-- [x] Serilog
-- [x] Swagger UI
+- [x] Serilog (console + rolling file)
+- [x] Swagger UI (Swashbuckle, OpenAPI 3)
 - [x] Advanced Pagination
-- [x] API Versioning
-- [ ] User Auditing
+- [x] API Versioning (Asp.Versioning)
+- [x] User Auditing (audit columns + AuditTrails table)
 - [x] Mailkit (Mail service)
 - [ ] Hangfire
-- [ ] Miniprofiler
 - [x] Enabling CORS with CustomPolicy
 
 Authentication
-- [x] JWT Authentication
+- [x] JWT Authentication with ASP.NET Core Identity
 
 Monitoring tool
 - [x] Health check UI
 - [ ] Kibana dashboard  
 
 Testing
-- [x] Unit testing (Nunit)
+- [x] Unit testing (NUnit 4, Moq, EF Core InMemory)
 - [x] Integration testing
 
 Caching
@@ -118,7 +117,7 @@ Caching
 - [ ] Distributed Redis Caching
 
 CI/CD
-- [ ] Task runner: .Net core and CircleCI
+- [x] Task runner: GitHub Actions and CircleCI
 - [ ] Coverage report: Sonarcloud.io
 - [ ] Quality report: Codacy
 - [ ] Docker image and Kubernate
@@ -127,6 +126,10 @@ CI/CD
 Documentation
 - [x] Conventional commit - commit and commit message    
 - [x] Docsify
+
+Tooling
+- [x] Central package management (Directory.Packages.props) with NuGet vulnerability audit
+- [x] SDK pinned via global.json; dotnet-ef as a local tool (dotnet-tools.json)
 
 ## Licence Used
 

@@ -1,8 +1,8 @@
-using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Infrastructure;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Events.Queries.GetEventsExport;
 
@@ -10,7 +10,7 @@ public class GetEventsExportQueryHandler(
     IMapper mapper,
     IGenericRepositoryAsync<Event> eventRepository,
     ICsvExporter csvExporter)
-    : IRequestHandler<GetEventsExportQuery, EventExportFileVm>
+    : IQueryHandler<GetEventsExportQuery, EventExportFileVm>
 {
     public async Task<EventExportFileVm> Handle(GetEventsExportQuery request, CancellationToken cancellationToken)
     {

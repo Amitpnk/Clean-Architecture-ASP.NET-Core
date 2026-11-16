@@ -14,7 +14,7 @@ public class CategoryController : BaseController
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult<List<CategoryListVm>>> GetAllCategories()
     {
-        var dtos = await Mediator.Send(new GetCategoriesListQuery());
+        var dtos = await Dispatcher.Query(new GetCategoriesListQuery());
         return Ok(dtos);
     }
 
@@ -26,7 +26,7 @@ public class CategoryController : BaseController
     {
         GetCategoriesListWithEventsQuery getCategoriesListWithEventsQuery = new GetCategoriesListWithEventsQuery() { IncludeHistory = includeHistory };
 
-        var dtos = await Mediator.Send(getCategoriesListWithEventsQuery);
+        var dtos = await Dispatcher.Query(getCategoriesListWithEventsQuery);
         return Ok(dtos);
     }
 
@@ -34,7 +34,7 @@ public class CategoryController : BaseController
     [HttpPost(Name = "AddCategory")]
     public async Task<ActionResult<CreateCategoryCommandResponse>> Create([FromBody] CreateCategoryCommand createCategoryCommand)
     {
-        var response = await Mediator.Send(createCategoryCommand);
+        var response = await Dispatcher.Send(createCategoryCommand);
         return Ok(response);
     }
 }

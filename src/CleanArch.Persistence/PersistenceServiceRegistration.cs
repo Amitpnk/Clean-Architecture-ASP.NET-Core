@@ -11,8 +11,11 @@ public static class PersistenceServiceRegistration
 {
     public static IServiceCollection AddPersistenceServices(this IServiceCollection services, IConfiguration configuration)
     {
+        // Identity (UserManager/SignInManager over ApplicationDbContext) is registered in AddIdentityServices.
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("CleanArchConnectionString")));
+            options.UseSqlServer(
+                configuration.GetConnectionString("CleanArchConnectionString"),
+                sql => sql.EnableRetryOnFailure()));
 
         services.AddScoped(typeof(IGenericRepositoryAsync<>), typeof(GenericRepository<>));
 

@@ -18,7 +18,7 @@ public class EventsController : BaseController
     [ProducesDefaultResponseType]
     public async Task<IActionResult> GetAll()
     {
-        var vm = await Mediator.Send(new GetEventsListQuery());
+        var vm = await Dispatcher.Query(new GetEventsListQuery());
         return Ok(vm);
     }
 
@@ -27,14 +27,14 @@ public class EventsController : BaseController
     public async Task<IActionResult> GetEventById(Guid id)
     {
         var getEventDetailQuery = new GetEventDetailQuery() { Id = id };
-        return Ok(await Mediator.Send(getEventDetailQuery));
+        return Ok(await Dispatcher.Query(getEventDetailQuery));
     }
 
     [Authorize]
     [HttpPost(Name = "AddEvent")]
     public async Task<ActionResult<Guid>> Create([FromBody] CreateEventCommand createEventCommand)
     {
-        var id = await Mediator.Send(createEventCommand);
+        var id = await Dispatcher.Send(createEventCommand);
         return Ok(id);
     }
 
@@ -45,7 +45,7 @@ public class EventsController : BaseController
     [ProducesDefaultResponseType]
     public async Task<ActionResult> Update([FromBody] UpdateEventCommand updateEventCommand)
     {
-        await Mediator.Send(updateEventCommand);
+        await Dispatcher.Send(updateEventCommand);
         return NoContent();
     }
 
@@ -57,7 +57,7 @@ public class EventsController : BaseController
     public async Task<ActionResult> Delete(Guid id)
     {
         var deleteEventCommand = new DeleteEventCommand() { EventId = id };
-        await Mediator.Send(deleteEventCommand);
+        await Dispatcher.Send(deleteEventCommand);
         return NoContent();
     }
 
@@ -66,7 +66,7 @@ public class EventsController : BaseController
     [FileResultContentType("text/csv")]
     public async Task<FileResult> ExportEvents()
     {
-        var fileDto = await Mediator.Send(new GetEventsExportQuery());
+        var fileDto = await Dispatcher.Query(new GetEventsExportQuery());
 
         return File(fileDto.Data, fileDto.ContentType, fileDto.EventExportFileName);
     }

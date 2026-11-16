@@ -1,9 +1,9 @@
-using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Infrastructure;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
 using CleanArch.Domain.Services.Mail;
-using MediatR;
+using CleanArch.Application.CQRS;
 using Microsoft.Extensions.Logging;
 
 namespace CleanArch.Application.Features.Events.Commands.CreateEvent;
@@ -13,7 +13,7 @@ public class CreateEventCommandHandler(
     IEventRepository eventRepository,
     IEmailService emailService,
     ILogger<CreateEventCommandHandler> logger)
-    : IRequestHandler<CreateEventCommand, Guid>
+    : ICommandHandler<CreateEventCommand, Guid>
 {
     public async Task<Guid> Handle(CreateEventCommand request, CancellationToken cancellationToken)
     {

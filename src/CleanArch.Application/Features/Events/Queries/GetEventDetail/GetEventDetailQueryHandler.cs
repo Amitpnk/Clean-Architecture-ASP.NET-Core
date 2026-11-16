@@ -1,8 +1,8 @@
-using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Application.Exceptions;
 using CleanArch.Domain.Entities;
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Events.Queries.GetEventDetail;
 
@@ -10,19 +10,17 @@ public class GetEventDetailQueryHandler(
     IMapper mapper,
     IGenericRepositoryAsync<Event> eventRepository,
     IGenericRepositoryAsync<Category> categoryRepository)
-    : IRequestHandler<GetEventDetailQuery, EventDetailVm>
+    : IQueryHandler<GetEventDetailQuery, EventDetailVm>
 {
     public async Task<EventDetailVm> Handle(GetEventDetailQuery request, CancellationToken cancellationToken)
     {
-        var @event = await eventRepository.GetByIdAsync(request.Id);
+        var @event = await eventRepository.GetByIdAsync(request.Id)
+            ?? throw new NotFoundException(nameof(Event), request.Id);
         var eventDetailDto = mapper.Map<EventDetailVm>(@event);
 
-        var category = await categoryRepository.GetByIdAsync(@event.CategoryId);
+        var category = await categoryRepository.GetByIdAsync(@event.CategoryId)
+            ?? throw new NotFoundException(nameof(Category), @event.CategoryId);
 
-        if (category == null)
-        {
-            throw new NotFoundException(nameof(Event), request.Id);
-        }
         eventDetailDto.Category = mapper.Map<CategoryDto>(category);
 
         return eventDetailDto;

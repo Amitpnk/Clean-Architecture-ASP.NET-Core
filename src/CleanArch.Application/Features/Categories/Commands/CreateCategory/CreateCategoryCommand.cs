@@ -1,8 +1,8 @@
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Categories.Commands.CreateCategory;
 
-public class CreateCategoryCommand : IRequest<CreateCategoryCommandResponse>
+public class CreateCategoryCommand : ICommand<CreateCategoryCommandResponse>
 {
     public string Name { get; set; }
 }

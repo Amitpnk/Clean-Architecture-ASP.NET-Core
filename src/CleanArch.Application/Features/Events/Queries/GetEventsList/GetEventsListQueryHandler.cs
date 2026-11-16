@@ -1,12 +1,12 @@
-using AutoMapper;
+using MapsterMapper;
 using CleanArch.Application.Contracts.Persistence;
 using CleanArch.Domain.Entities;
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Events.Queries.GetEventsList;
 
 public class GetEventsListQueryHandler(IMapper mapper, IGenericRepositoryAsync<Event> eventRepository)
-    : IRequestHandler<GetEventsListQuery, List<EventListVm>>
+    : IQueryHandler<GetEventsListQuery, List<EventListVm>>
 {
     public async Task<List<EventListVm>> Handle(GetEventsListQuery request, CancellationToken cancellationToken)
     {

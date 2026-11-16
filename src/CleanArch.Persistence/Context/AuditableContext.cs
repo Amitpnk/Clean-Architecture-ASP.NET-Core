@@ -8,11 +8,16 @@ public class AuditableContext(DbContextOptions options) : IdentityContext(option
 {
     public DbSet<AuditTrail> AuditTrails { get; set; }
 
-    public virtual async Task<int> SaveChangesAsync(string userId = null)
+    /// <summary>
+    /// Saves changes and writes <see cref="AuditTrail"/> rows attributed to <paramref name="userId"/>.
+    /// Deliberately not an overload of SaveChangesAsync: a parameterless <c>SaveChangesAsync()</c> call
+    /// used to bind to it and bypass the audit-column stamping in ApplicationDbContext.
+    /// </summary>
+    protected async Task<int> SaveChangesWithAuditAsync(string userId, CancellationToken cancellationToken = default)
     {
         var auditEntries = OnBeforeSaveChanges(userId);
-        var result = await base.SaveChangesAsync();
-        await OnAfterSaveChanges(auditEntries);
+        var result = await base.SaveChangesAsync(cancellationToken);
+        await OnAfterSaveChanges(auditEntries, cancellationToken);
         return result;
     }
 
@@ -68,14 +73,14 @@ public class AuditableContext(DbContextOptions options) : IdentityContext(option
                 }
             }
         }
-        foreach (var auditEntry in auditEntries.Where(_ => !_.HasTemporaryProperties))
+        foreach (var auditEntry in auditEntries.Where(e => !e.HasTemporaryProperties))
         {
             AuditTrails.Add(auditEntry.ToAudit());
         }
-        return auditEntries.Where(_ => _.HasTemporaryProperties).ToList();
+        return auditEntries.Where(e => e.HasTemporaryProperties).ToList();
     }
 
-    private Task OnAfterSaveChanges(List<AuditEntry> auditEntries)
+    private Task OnAfterSaveChanges(List<AuditEntry> auditEntries, CancellationToken cancellationToken)
     {
         if (auditEntries == null || auditEntries.Count == 0)
             return Task.CompletedTask;
@@ -95,6 +100,7 @@ public class AuditableContext(DbContextOptions options) : IdentityContext(option
             }
             AuditTrails.Add(auditEntry.ToAudit());
         }
-        return SaveChangesAsync();
+        // Persist only the completed audit rows; don't audit the audit rows themselves.
+        return base.SaveChangesAsync(cancellationToken);
     }
 }

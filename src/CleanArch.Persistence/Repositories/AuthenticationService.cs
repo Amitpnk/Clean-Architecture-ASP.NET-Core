@@ -143,11 +143,9 @@ public class AuthenticationService(
 
     private string RandomTokenString()
     {
-        using var rngCryptoServiceProvider = new RNGCryptoServiceProvider();
-        var randomBytes = new byte[40];
-        rngCryptoServiceProvider.GetBytes(randomBytes);
+        var randomBytes = RandomNumberGenerator.GetBytes(40);
         // convert random bytes to hex string
-        return BitConverter.ToString(randomBytes).Replace("-", "");
+        return Convert.ToHexString(randomBytes);
     }
 
     private async Task<string> SendVerificationEmail(ApplicationUser user, string origin)

@@ -1,4 +1,5 @@
-using MediatR;
+using Asp.Versioning;
+using CleanArch.Application.CQRS;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,7 @@ namespace CleanArch.Api.Controllers;
 [ApiVersion("1.0")]
 public class BaseController : ControllerBase
 {
-    private IMediator _mediator;
+    private IDispatcher _dispatcher;
 
-    protected IMediator Mediator => _mediator ??= HttpContext.RequestServices.GetService<IMediator>();
+    protected IDispatcher Dispatcher => _dispatcher ??= HttpContext.RequestServices.GetRequiredService<IDispatcher>();
 }

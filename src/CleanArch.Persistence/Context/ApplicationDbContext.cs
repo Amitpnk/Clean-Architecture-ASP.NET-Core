@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.Context;
 
-public class ApplicationDbContext : AuditableContext
+public sealed class ApplicationDbContext : AuditableContext
 {
     private readonly ILoggedInUserService _loggedInUserService;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -27,6 +27,9 @@ public class ApplicationDbContext : AuditableContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        // Identity model, custom Identity table names and Identity seed data (IdentityContext).
+        base.OnModelCreating(builder);
+
         foreach (var property in builder.Model.GetEntityTypes()
        .SelectMany(t => t.GetProperties())
        .Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))
@@ -60,7 +63,7 @@ public class ApplicationDbContext : AuditableContext
         }
         else
         {
-            return await base.SaveChangesAsync(_loggedInUserService.UserId);
+            return await SaveChangesWithAuditAsync(_loggedInUserService.UserId, cancellationToken);
         }
     }
 }

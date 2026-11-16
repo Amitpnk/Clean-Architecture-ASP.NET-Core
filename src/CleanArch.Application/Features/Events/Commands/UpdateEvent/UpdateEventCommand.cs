@@ -1,8 +1,8 @@
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Events.Commands.UpdateEvent;
 
-public class UpdateEventCommand : IRequest
+public class UpdateEventCommand : ICommand
 {
     public Guid EventId { get; set; }
     public string Name { get; set; }

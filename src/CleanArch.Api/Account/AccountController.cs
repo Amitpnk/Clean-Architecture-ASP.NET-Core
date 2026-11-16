@@ -16,8 +16,7 @@ public class AccountController(IAuthenticationService authenticationService) : C
     [HttpPost("register")]
     public async Task<IActionResult> RegisterAsync(RegistrationRequest request)
     {
-        var origin = Request.Headers["origin"];
-        return Ok(await authenticationService.RegisterAsync(request, origin));
+        return Ok(await authenticationService.RegisterAsync(request, GetOrigin()));
     }
     [HttpGet("confirm-email")]
     public async Task<IActionResult> ConfirmEmailAsync([FromQuery] string userId, [FromQuery] string code)
@@ -27,7 +26,7 @@ public class AccountController(IAuthenticationService authenticationService) : C
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest model)
     {
-        await authenticationService.ForgotPassword(model, Request.Headers["origin"]);
+        await authenticationService.ForgotPassword(model, GetOrigin());
         return Ok();
     }
     [HttpPost("reset-password")]
@@ -36,5 +35,12 @@ public class AccountController(IAuthenticationService authenticationService) : C
 
         return Ok(await authenticationService.ResetPassword(model));
     }
+
+    // Browsers send Origin on cross-origin POSTs; API clients (curl, Postman, services) often don't.
+    // Fall back to this API's own base URL so confirmation/reset links are always absolute.
+    private string GetOrigin() =>
+        Request.Headers.Origin.FirstOrDefault() is { Length: > 0 } origin
+            ? origin
+            : $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
 }

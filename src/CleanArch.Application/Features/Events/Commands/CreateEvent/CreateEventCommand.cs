@@ -1,8 +1,8 @@
-using MediatR;
+using CleanArch.Application.CQRS;
 
 namespace CleanArch.Application.Features.Events.Commands.CreateEvent;
 
-public class CreateEventCommand : IRequest<Guid>
+public class CreateEventCommand : ICommand<Guid>
 {
     public string Name { get; set; }
     public string Description { get; set; }

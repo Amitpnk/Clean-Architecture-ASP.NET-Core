@@ -13,25 +13,29 @@ public static class DefaultRoles
                 {
                     Id = Constants.SuperAdmin,
                     Name = Roles.SuperAdmin.ToString(),
-                    NormalizedName = Roles.SuperAdmin.ToString()
+                    NormalizedName = Roles.SuperAdmin.ToString().ToUpperInvariant(),
+                    ConcurrencyStamp = Constants.SuperAdmin
                 },
                 new IdentityRole
                 {
                     Id = Constants.Admin,
                     Name = Roles.Admin.ToString(),
-                    NormalizedName = Roles.Admin.ToString()
+                    NormalizedName = Roles.Admin.ToString().ToUpperInvariant(),
+                    ConcurrencyStamp = Constants.Admin
                 },
                 new IdentityRole
                 {
                     Id = Constants.Moderator,
                     Name = Roles.Moderator.ToString(),
-                    NormalizedName = Roles.Moderator.ToString()
+                    NormalizedName = Roles.Moderator.ToString().ToUpperInvariant(),
+                    ConcurrencyStamp = Constants.Moderator
                 },
                 new IdentityRole
                 {
                     Id = Constants.Basic,
                     Name = Roles.Basic.ToString(),
-                    NormalizedName = Roles.Basic.ToString()
+                    NormalizedName = Roles.Basic.ToString().ToUpperInvariant(),
+                    ConcurrencyStamp = Constants.Basic
                 }
             };
     }

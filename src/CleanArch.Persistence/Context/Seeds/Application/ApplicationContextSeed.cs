@@ -6,9 +6,10 @@ namespace CleanArch.Persistence.Context.Seeds.Application;
 public static class ApplicationContextSeed
 {
 
-    static Guid concertGuid = Guid.NewGuid();
-    static Guid musicalGuid = Guid.NewGuid();
-    static Guid conferenceGuid = Guid.NewGuid();
+    // Fixed keys and dates: HasData seed values must be deterministic or EF sees a model change on every run.
+    private static readonly Guid concertGuid = new("b0f5c1a2-3d4e-4f60-8a71-92b3c4d5e601");
+    private static readonly Guid musicalGuid = new("b0f5c1a2-3d4e-4f60-8a71-92b3c4d5e602");
+    private static readonly Guid conferenceGuid = new("b0f5c1a2-3d4e-4f60-8a71-92b3c4d5e603");
 
     public static void ApplicationSeed(this ModelBuilder modelBuilder)
     {
@@ -43,36 +44,36 @@ public static class ApplicationContextSeed
             {
                 new Event
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e701"),
                     Name = "Guitar hits 2020",
-                    Date = DateTime.Now.AddMonths(4),
+                    Date = new DateTime(2027, 3, 15, 0, 0, 0, DateTimeKind.Utc),
                     Description = "Guitar music concert 2020",
                     CategoryId = musicalGuid
                 },
 
                 new Event
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e702"),
                     Name = "Guitar hits 2021",
-                    Date = DateTime.Now.AddMonths(4),
+                    Date = new DateTime(2027, 3, 15, 0, 0, 0, DateTimeKind.Utc),
                     Description = "Guitar music concert 2021",
                     CategoryId = musicalGuid
                 },
 
                 new Event
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e703"),
                     Name = "Event 2020",
-                    Date = DateTime.Now.AddMonths(10),
+                    Date = new DateTime(2027, 9, 15, 0, 0, 0, DateTimeKind.Utc),
                     Description = "The tech conference in c#",
                     CategoryId = conferenceGuid
                 },
 
                 new Event
                 {
-                    Id = Guid.NewGuid(),
+                    Id = new Guid("e1a2b3c4-d5e6-4f70-8192-a3b4c5d6e704"),
                     Name = "Event 2021",
-                    Date = DateTime.Now.AddMonths(8),
+                    Date = new DateTime(2027, 7, 15, 0, 0, 0, DateTimeKind.Utc),
                     Description = "The tech conference in .net core",
                     CategoryId = conferenceGuid
                 },

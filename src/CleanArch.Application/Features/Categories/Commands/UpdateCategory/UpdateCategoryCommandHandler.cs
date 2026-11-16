@@ -1,34 +1,27 @@
-using AutoMapper;
 using CleanArch.Application.Contracts.Persistence;
+using CleanArch.Application.CQRS;
 using CleanArch.Application.Exceptions;
 using CleanArch.Domain.Entities;
-using MediatR;
+using MapsterMapper;
 
 namespace CleanArch.Application.Features.Categories.Commands.UpdateCategory;
 
 public class UpdateCategoryCommandHandler(IMapper mapper, IGenericRepositoryAsync<Category> categoryRepository)
-    : IRequestHandler<UpdateCategoryCommand>
+    : CommandHandler<UpdateCategoryCommand>
 {
-    public async Task<Unit> Handle(UpdateCategoryCommand request, CancellationToken cancellationToken)
+    protected override async Task HandleAsync(UpdateCategoryCommand request, CancellationToken cancellationToken)
     {
-
-        var categoryToUpdate = await categoryRepository.GetByIdAsync(request.CategoryId);
-
-        if (categoryToUpdate == null)
-        {
-            throw new NotFoundException(nameof(Category), request.CategoryId);
-        }
+        var categoryToUpdate = await categoryRepository.GetByIdAsync(request.CategoryId)
+            ?? throw new NotFoundException(nameof(Category), request.CategoryId);
 
         var validator = new UpdateCategoryCommandValidator();
-        var validationResult = await validator.ValidateAsync(request);
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
 
         if (validationResult.Errors.Count > 0)
             throw new ValidationException(validationResult);
 
-        mapper.Map(request, categoryToUpdate, typeof(UpdateCategoryCommand), typeof(Category));
+        mapper.Map(request, categoryToUpdate);
 
         await categoryRepository.UpdateAsync(categoryToUpdate);
-
-        return Unit.Value;
     }
 }

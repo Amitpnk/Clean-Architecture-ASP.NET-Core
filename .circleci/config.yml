@@ -1,18 +1,23 @@
 version: 2.1
 
 orbs:
-win: circleci/windows@2.2.0
+  sonarcloud: sonarsource/sonarcloud@1.0.1
 
 jobs:
   build:
-    executor: win/default     
-  
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:10.0
     steps:
       - checkout
-      - run: dotnet build
-
-orbs:
-  sonarcloud: sonarsource/sonarcloud@1.0.1
+      - run:
+          name: Restore
+          command: dotnet restore CleanArch.sln
+      - run:
+          name: Build
+          command: dotnet build CleanArch.sln --no-restore --configuration Release
+      - run:
+          name: Test
+          command: dotnet test CleanArch.sln --no-build --configuration Release
 
 workflows:
   main:
