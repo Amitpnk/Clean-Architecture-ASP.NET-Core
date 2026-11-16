@@ -64,7 +64,10 @@ builder.Services.AddHealthChecks()
     .AddUrlGroup(new Uri(appSettings.ApplicationDetail.ContactWebsite), name: "My personal website", failureStatus: HealthStatus.Degraded)
     .AddSqlServer(builder.Configuration.GetConnectionString("CleanArchConnectionString") ?? string.Empty);
 
-builder.Services.AddHealthChecksUI(setup => setup.AddHealthCheckEndpoint("Basic Health Check", "/healthz"))
+// A relative URI is resolved against the server's bound address, which is unusable ([::]) inside a
+// container, so docker-compose sets HealthChecks:SelfUri to an absolute URL.
+var healthCheckUri = builder.Configuration["HealthChecks:SelfUri"] ?? "/healthz";
+builder.Services.AddHealthChecksUI(setup => setup.AddHealthCheckEndpoint("Basic Health Check", healthCheckUri))
     .AddInMemoryStorage();
 
 // API versioning

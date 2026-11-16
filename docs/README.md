@@ -100,6 +100,7 @@ Feature
 - [x] Mailkit (Mail service)
 - [ ] Hangfire
 - [x] Enabling CORS with CustomPolicy
+- [ ] BenchmarkDotNet
 
 Authentication
 - [x] JWT Authentication with ASP.NET Core Identity
@@ -110,7 +111,7 @@ Monitoring tool
 
 Testing
 - [x] Unit testing (NUnit 4, Moq, EF Core InMemory)
-- [x] Integration testing
+- [x] Integration testing with Testcontainers (real SQL Server in Docker; `WebApplicationFactory` for the API)
 
 Caching
 - [ ] Inmemory Caching
@@ -120,7 +121,8 @@ CI/CD
 - [x] Task runner: GitHub Actions and CircleCI
 - [ ] Coverage report: Sonarcloud.io
 - [ ] Quality report: Codacy
-- [ ] Docker image and Kubernate
+- [x] Docker image (multi-stage Dockerfile) and docker-compose (API + SQL Server)
+- [ ] Kubernetes
 - [ ] Cloud server: Azure for cloud
 
 Documentation
@@ -130,6 +132,27 @@ Documentation
 Tooling
 - [x] Central package management (Directory.Packages.props) with NuGet vulnerability audit
 - [x] SDK pinned via global.json; dotnet-ef as a local tool (dotnet-tools.json)
+
+## Running with Docker
+
+```bash
+docker compose up --build
+```
+
+This starts SQL Server 2022 and the API; migrations and seed data are applied on startup.
+Swagger is at http://localhost:8080/swagger and the health check UI at http://localhost:8080/healthcheck-ui.
+Sign in with `superadmin@gmail.com` / `Password@123`. Override the SQL `sa` password with the `SA_PASSWORD` environment variable.
+
+## Integration tests
+
+`test/CleanArch.Persistence.IntegrationTests` (repositories, migrations, auditing) and
+`test/CleanArch.Api.IntegrationTests` (HTTP endpoints, JWT auth) use [Testcontainers](https://dotnet.testcontainers.org/)
+to start a throwaway SQL Server container per test assembly, so Docker must be running:
+
+```bash
+dotnet test test/CleanArch.Persistence.IntegrationTests
+dotnet test test/CleanArch.Api.IntegrationTests
+```
 
 ## Licence Used
 
