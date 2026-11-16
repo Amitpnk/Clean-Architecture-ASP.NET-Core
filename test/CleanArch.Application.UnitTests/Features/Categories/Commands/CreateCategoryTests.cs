@@ -9,47 +9,34 @@ namespace CleanArch.Application.UnitTests.Features.Categories.Commands;
 
 public class CreateCategoryTests
 {
-    private IMapper _mapper;
-    private Mock<ICategoryRepository> _mockCategoryRepository;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
-    {
-        _mockCategoryRepository = RepositoryMocks.GetCategoryRepository();
-        _mapper = MapperFactory.Create();
-    }
+    private readonly IMapper _mapper = MapperFactory.Create();
+    private readonly Mock<ICategoryRepository> _mockCategoryRepository = RepositoryMocks.GetCategoryRepository();
 
-    [Test]
+    [Fact]
     public async Task Handle_ValidCategory_AddedToCategoriesRepo()
     {
         var handler = new CreateCategoryCommandHandler(_mapper, _mockCategoryRepository.Object);
 
-        var response = await handler.Handle(new CreateCategoryCommand { Name = "Test" }, CancellationToken.None);
+        var response = await handler.Handle(new CreateCategoryCommand { Name = "Test" }, Ct);
 
         var allCategories = await _mockCategoryRepository.Object.ListAllAsync();
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(allCategories, Has.Count.EqualTo(5));
-            Assert.That(response.Success, Is.True);
-            Assert.That(response.Category.Name, Is.EqualTo("Test"));
-        }
+        Assert.Equal(5, allCategories.Count);
+        Assert.True(response.Success);
+        Assert.Equal("Test", response.Category.Name);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_EmptyName_ReturnsValidationErrors()
     {
         var handler = new CreateCategoryCommandHandler(_mapper, _mockCategoryRepository.Object);
 
-        var response = await handler.Handle(new CreateCategoryCommand { Name = string.Empty }, CancellationToken.None);
+        var response = await handler.Handle(new CreateCategoryCommand { Name = string.Empty }, Ct);
 
         var allCategories = await _mockCategoryRepository.Object.ListAllAsync();
-
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(response.Success, Is.False);
-            Assert.That(response.ValidationErrors, Is.Not.Empty);
-            Assert.That(allCategories, Has.Count.EqualTo(4));
-        }
+        Assert.False(response.Success);
+        Assert.NotEmpty(response.ValidationErrors);
+        Assert.Equal(4, allCategories.Count);
     }
 }

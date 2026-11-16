@@ -33,6 +33,7 @@ jobs:
       - name: Build
         run: dotnet build CleanArch.sln --no-restore --configuration ${{ matrix.configuration }}
 
+      # Includes the Testcontainers integration tests; ubuntu-latest runners ship with Docker.
       - name: Test
         run: >
           dotnet test CleanArch.sln --no-build --configuration ${{ matrix.configuration }}
@@ -56,3 +57,13 @@ jobs:
             --startup-project src/CleanArch.Api \
             --context ApplicationDbContext \
             --no-build
+
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build API image
+        run: docker build --file src/CleanArch.Api/Dockerfile --tag cleanarch-api:${{ github.sha }} .

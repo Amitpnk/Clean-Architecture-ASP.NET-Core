@@ -17,7 +17,9 @@ jobs:
           command: dotnet build CleanArch.sln --no-restore --configuration Release
       - run:
           name: Test
-          command: dotnet test CleanArch.sln --no-build --configuration Release
+          # The *.IntegrationTests projects need a Docker daemon (Testcontainers), which this executor lacks;
+          # they run in GitHub Actions instead.
+          command: dotnet test CleanArch.sln --no-build --configuration Release --filter "FullyQualifiedName!~IntegrationTests"
 
 workflows:
   main:

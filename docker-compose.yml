@@ -1,0 +1,42 @@
+# Local stack: SQL Server + API.
+#   docker compose up --build
+#   Swagger: http://localhost:8080/swagger
+# Set SA_PASSWORD in your shell or a .env file to override the development default.
+
+name: cleanarch
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:-CleanArch@Dev123}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  api:
+    build:
+      context: .
+      dockerfile: src/CleanArch.Api/Dockerfile
+    image: cleanarch-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__CleanArchConnectionString: "Server=sqlserver,1433;Database=CleanArchDb;User Id=sa;Password=${SA_PASSWORD:-CleanArch@Dev123};TrustServerCertificate=True"
+      ConnectionStrings__CleanArchIdentityConnectionString: "Server=sqlserver,1433;Database=CleanArchDb;User Id=sa;Password=${SA_PASSWORD:-CleanArch@Dev123};TrustServerCertificate=True"
+      HealthChecks__SelfUri: "http://localhost:8080/healthz"
+    ports:
+      - "8080:8080"
+
+volumes:
+  sqlserver-data:

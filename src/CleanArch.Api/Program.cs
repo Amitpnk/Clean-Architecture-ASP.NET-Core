@@ -1,6 +1,6 @@
 using Asp.Versioning;
+using CleanArch.Api.ExceptionHandling;
 using CleanArch.Application;
-using CleanArch.Application.Middleware;
 using CleanArch.CrossCuttingConcerns.Identity;
 using CleanArch.CrossCuttingConcerns.OS;
 using CleanArch.CrossCuttingConcerns.Utility;
@@ -39,6 +39,11 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
 builder.Services.AddFeatureManagement();
 
+// Exception handling: RFC 9457 problem details (application/problem+json), with a traceId on every error.
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
+    context.ProblemDetails.Extensions.TryAdd("traceId", context.HttpContext.TraceIdentifier));
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -64,7 +69,10 @@ builder.Services.AddHealthChecks()
     .AddUrlGroup(new Uri(appSettings.ApplicationDetail.ContactWebsite), name: "My personal website", failureStatus: HealthStatus.Degraded)
     .AddSqlServer(builder.Configuration.GetConnectionString("CleanArchConnectionString") ?? string.Empty);
 
-builder.Services.AddHealthChecksUI(setup => setup.AddHealthCheckEndpoint("Basic Health Check", "/healthz"))
+// A relative URI is resolved against the server's bound address, which is unusable ([::]) inside a
+// container, so docker-compose sets HealthChecks:SelfUri to an absolute URL.
+var healthCheckUri = builder.Configuration["HealthChecks:SelfUri"] ?? "/healthz";
+builder.Services.AddHealthChecksUI(setup => setup.AddHealthCheckEndpoint("Basic Health Check", healthCheckUri))
     .AddInMemoryStorage();
 
 // API versioning
@@ -117,12 +125,8 @@ using (var scope = app.Services.CreateScope())
     await dbContext.Database.MigrateAsync();
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-
-app.UseCustomExceptionHandler();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseSerilogRequestLogging();
 
