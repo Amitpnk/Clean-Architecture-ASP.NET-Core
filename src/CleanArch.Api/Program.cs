@@ -1,6 +1,6 @@
 using Asp.Versioning;
+using CleanArch.Api.ExceptionHandling;
 using CleanArch.Application;
-using CleanArch.Application.Middleware;
 using CleanArch.CrossCuttingConcerns.Identity;
 using CleanArch.CrossCuttingConcerns.OS;
 using CleanArch.CrossCuttingConcerns.Utility;
@@ -38,6 +38,11 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
 builder.Services.AddFeatureManagement();
+
+// Exception handling: RFC 9457 problem details (application/problem+json), with a traceId on every error.
+builder.Services.AddProblemDetails(options => options.CustomizeProblemDetails = context =>
+    context.ProblemDetails.Extensions.TryAdd("traceId", context.HttpContext.TraceIdentifier));
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // CORS
 builder.Services.AddCors(options =>
@@ -120,12 +125,8 @@ using (var scope = app.Services.CreateScope())
     await dbContext.Database.MigrateAsync();
 }
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseDeveloperExceptionPage();
-}
-
-app.UseCustomExceptionHandler();
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 app.UseSerilogRequestLogging();
 

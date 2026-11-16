@@ -87,7 +87,7 @@ public class CreateEventCommandHandlerTests
 
         var ex = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, Ct));
 
-        Assert.NotEmpty(ex.ValdationErrors);
+        Assert.NotEmpty(ex.ValidationErrors);
         _repository.Verify(r => r.AddAsync(It.IsAny<Event>()), Times.Never);
         _emailService.Verify(s => s.SendEmailAsync(It.IsAny<MailRequest>()), Times.Never);
     }

@@ -22,70 +22,77 @@ az group exists -n rg-cleanarch-dev-shared-001
 ### Create Resource Group
 
 ```
-az group create --name "rg-cleanarch-dev-shared-001" 
-                --location "southindia" 
-                --tags "Environment=Development" 
-                "Project=CleanArch" "Department=SD" "ResourceType=Mixed"
-```
-
-### Create SQL Server (cleanarchdb/sqladmin@123)
-
-```
-az sql server create --resource-group "rg-cleanarch-dev-shared-001" \
-                     --name "sqldb-cleanarch-dev" \
-                     --location "southindia" \
-                     --admin-user "cleanarchuser" \
-                     --admin-password 'sqladmin@123'
-```
-
-### Configure Firewall
-
-```
-az sql server firewall-rule create --resource-group "ClassifiedAds_DEV" \
-                                    --server "sqldb-cleanarch-dev" \
-                                    --name "development" \
-                                    --start-ip-address "0.0.0.0" \
-                                    --end-ip-address "255.255.255.255"                                   
-```
-
-### Create SQL Database
-
-```
-az sql db create --resource-group "rg-cleanarch-dev-shared-001" \
-                 --name "classifiedadsdevdb" \
-                 --server  "classifiedadsdev" \
-                 --service-objective Basic \
-                 --tags "Environment=Development" "Project=ClassifiedAds" "Department=SD"
-```
-
-### Create Key Vault
-
-```
-az keyvault create --resource-group "rg-cleanarch-dev-shared-001" \
-                   --name "classifiedadsdev" \
-                   --location "southeastasia" \
-                   --sku F1 \
-                   --tags "Environment=Development" "Project=ClassifiedAds" "Department=SD"
+az group create --name "rg-cleanarch-dev-shared-001" \
+                --location "southindia" \
+                --tags "Environment=Development" "Project=CleanArch" "Department=SD" "ResourceType=Mixed"
 ```
 
 ### Create App Service Plan
 
 ```
 az appservice plan create --resource-group "rg-cleanarch-dev-shared-001" \
-                          --name CleanArch-Hosts \
+                          --name cleanarch-hosts \
                           --location "southindia" \
                           --sku F1 \
-                          --tags "Environment=Development" "Project=CleanArch" "Department=SD"
+                          --tags "Environment=Development" "Project=CleanArch" "Department=SD" \
                           --number-of-workers 2
 ```
 
 ### Create App Services:
 
 ```
-az webapp create --resource-group "rg-cleanarch-dev-shared-001" --plan CleanArch-Hosts --name webapi-Cleanarch --runtime "DOTNET:5.0" --tags "Environment=Development" "Project=CleanArch" "Department=SD"
+az webapp create --resource-group "rg-cleanarch-dev-shared-001" \
+                 --plan cleanarch-hosts \
+                 --name app-cleanarchapi-dev-001 \
+                 --runtime "DOTNETCORE:10.0" \
+                 --tags "Environment=Development" "Project=CleanArch" "Department=SD"
 ```
 
-### Create Lock:
+### Set username for deployment:
+
+```
+az webapp deployment user set --user-name cleanarchPs
+```
+
+### Create SQL Server (cleanarchuser/sqladmin123#@)
+
+```ps1
+az sql server create --resource-group "rg-cleanarch-dev-shared-001" \
+                     --name "sql-cleanarch-dev" \
+                     --location "centralindia" \
+                     --admin-user "cleanarchuser" \
+                     --admin-password 'sqladmin123#@'
+```
+
+### Create SQL Database
+
+```ps1
+az sql db create --resource-group "rg-cleanarch-dev-shared-001" \
+                --name "sqldb-cleanarch-dev" \
+                --server  "sql-cleanarch-dev" \
+                --service-objective Free \
+                --tags "Environment=Development" "Project=CleanArch" "Department=SD"
+```
+
+For reference:
+
+```ps1
+az sql db list-editions -a -o table -l centralindia
+```
+
+
+### Configure Firewall
+
+```ps1
+az sql server firewall-rule create --resource-group "rg-cleanarch-dev-shared-001" \
+                                    --server "sql-cleanarch-dev" \
+                                    --name "development" \
+                                    --start-ip-address "0.0.0.0" \
+                                    --end-ip-address "255.255.255.255"                                   
+```
+
+### Create Lock
+
 ```
 az lock create --lock-type CanNotDelete \
                --name CanNotDelete \

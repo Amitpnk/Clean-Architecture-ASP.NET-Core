@@ -35,7 +35,7 @@ If you have found this project helpful, either as a library that you use or as a
 
 ## Clean Architecture
 
-Clean Architecture was introduced by by Robert C. Martin (Uncle Bob) to provide a better way to build applications in perspective of better testability, maintainability, and dependability on the infrastructures like databases and services
+Clean Architecture was introduced by Robert C. Martin (Uncle Bob) to provide a better way to build applications in perspective of better testability, maintainability, and dependability on the infrastructures like databases and services
 
 Domain in center and building layer top of it. You can call it as Domain-centric Architecture too.
 
@@ -47,7 +47,7 @@ Though layer architectures like onion, Hexagonal all vary somewhat in their deta
 
 ## About The Project
 
-This project provides complete solution which is built on Clean Architecture with all essentia,  feature CI/CD, best practice, testing Strategy using .NET 10.
+This project provides complete solution which is built on Clean Architecture with all essential features, CI/CD, best practice, testing Strategy using .NET 10.
 
 ![image](img/clean-architecture.png)
 
@@ -58,13 +58,17 @@ Architecture Pattern
 - [x] Clean architecture
 - [x] (Includes)
     - [x] Screaming architecture-[Functional organisation design](http://blog.cleancoder.com/uncle-bob/2011/09/30/Screaming-Architecture.html)
-    - [x] Onion archhitecture
+    - [x] Onion architecture
 
 Design Pattern
 - [x] CQRS design pattern
 - [ ] Decorator design pattern
 - [x] Mediator design pattern (lightweight custom CQRS dispatcher - no MediatR dependency)
+    - [x] Dispatcher pipeline support (`IPipelineBehavior`) for cross-cutting steps around commands and queries
 - [x] Repository design pattern
+- [x] Generic Repository pattern (`IGenericRepositoryAsync<T>`)
+- [x] Value Object pattern
+- [x] Options pattern (`IOptions<JwtSettings>`, `IOptions<MailSettings>`)
 - [x] Unit of work 
 - [x] Factory design pattern
  
@@ -89,7 +93,7 @@ Service
 
 Feature
 - [x] Dataseeding
-- [x] Custom Exceptionn Handler
+- [x] Global exception handler (`IExceptionHandler` + RFC 9457 `ProblemDetails`)
 - [x] Mapster (object mapping)
 - [x] Fluent validation
 - [x] Serilog (console + rolling file)
@@ -100,13 +104,20 @@ Feature
 - [x] Mailkit (Mail service)
 - [ ] Hangfire
 - [x] Enabling CORS with CustomPolicy
+- [x] Feature flags (Microsoft.FeatureManagement, e.g. `EnableEmailService`)
+- [x] CSV export (CsvHelper) with a custom Swagger operation filter for file responses
+- [x] `/info` endpoint (`MetaController`)
 - [ ] BenchmarkDotNet
 
 Authentication
 - [x] JWT Authentication with ASP.NET Core Identity
+- [x] Account flows: register, email confirmation, forgot password and reset password
+- [ ] Refresh tokens (tokens are generated and returned; `/refresh-token` endpoint pending)
+- [x] Role seeding (default roles and users); role/policy-based authorization pending
 
 Monitoring tool
 - [x] Health check UI
+- [x] Health checks: EF DbContext, SQL Server and external URL, exposed at `/healthz`
 - [ ] Kibana dashboard  
 
 Testing
@@ -119,6 +130,7 @@ Caching
 
 CI/CD
 - [x] Task runner: GitHub Actions and CircleCI
+- [x] CI quality gates: GitHub Actions matrix build (Debug and Release), coverlet coverage collection, EF Core migrations up-to-date check
 - [ ] Coverage report: Sonarcloud.io
 - [ ] Quality report: Codacy
 - [x] Docker image (multi-stage Dockerfile) and docker-compose (API + SQL Server)

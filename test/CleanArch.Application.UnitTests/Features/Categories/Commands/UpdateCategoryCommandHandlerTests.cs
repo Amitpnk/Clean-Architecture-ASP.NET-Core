@@ -50,7 +50,7 @@ public class UpdateCategoryCommandHandlerTests
         var ex = await Assert.ThrowsAsync<ValidationException>(() =>
             _handler.Handle(new UpdateCategoryCommand { CategoryId = existing.Id, Name = "" }, Ct));
 
-        Assert.NotEmpty(ex.ValdationErrors);
+        Assert.NotEmpty(ex.ValidationErrors);
         _repository.Verify(r => r.UpdateAsync(It.IsAny<Category>()), Times.Never);
     }
 }

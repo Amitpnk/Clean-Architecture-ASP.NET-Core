@@ -19,7 +19,7 @@ public class GenericRepository<T>(ApplicationDbContext dbContext) : IGenericRepo
         return await _dbContext.Set<T>().ToListAsync();
     }
 
-    public async virtual Task<IReadOnlyList<T>> GetPagedReponseAsync(int page, int size)
+    public async virtual Task<IReadOnlyList<T>> GetPagedResponseAsync(int page, int size)
     {
         return await _dbContext.Set<T>().Skip((page - 1) * size).Take(size).AsNoTracking().ToListAsync();
     }

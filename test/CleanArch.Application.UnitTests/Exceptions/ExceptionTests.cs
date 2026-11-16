@@ -34,7 +34,7 @@ public class ExceptionTests
 
         var ex = new ValidationException(result);
 
-        Assert.Equal(["required", "in the past"], ex.ValdationErrors);
+        Assert.Equal(["required", "in the past"], ex.ValidationErrors);
     }
 
     [Fact]
@@ -42,6 +42,6 @@ public class ExceptionTests
     {
         var ex = new ValidationException(new ValidationResult());
 
-        Assert.Empty(ex.ValdationErrors);
+        Assert.Empty(ex.ValidationErrors);
     }
 }

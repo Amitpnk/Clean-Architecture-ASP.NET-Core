@@ -80,11 +80,11 @@ public class GenericRepositoryIntegrationTests(SqlServerContainer sqlServer) : D
     }
 
     [Fact]
-    public async Task GetPagedReponseAsync_ReturnsRequestedPage()
+    public async Task GetPagedResponseAsync_ReturnsRequestedPage()
     {
         var repository = new GenericRepository<Category>(DbContext);
 
-        var page = await repository.GetPagedReponseAsync(page: 2, size: 2);
+        var page = await repository.GetPagedResponseAsync(page: 2, size: 2);
 
         Assert.Single(page);
     }
