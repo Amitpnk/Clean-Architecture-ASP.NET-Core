@@ -12,25 +12,22 @@ namespace CleanArch.Application.UnitTests.Features.Events.Commands;
 
 public class CreateEventCommandHandlerTests
 {
-    private Mock<IEventRepository> _repository;
-    private Mock<IEmailService> _emailService;
-    private Mock<ILogger<CreateEventCommandHandler>> _logger;
-    private CreateEventCommandHandler _handler;
-    private Guid _generatedId;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<IEventRepository> _repository = new();
+    private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<ILogger<CreateEventCommandHandler>> _logger = new();
+    private readonly Guid _generatedId = Guid.NewGuid();
+    private readonly CreateEventCommandHandler _handler;
+
+    public CreateEventCommandHandlerTests()
     {
-        _generatedId = Guid.NewGuid();
-        _repository = new Mock<IEventRepository>();
         _repository.Setup(r => r.IsEventNameAndDateUnique(It.IsAny<string>(), It.IsAny<DateTime>())).ReturnsAsync(false);
         _repository.Setup(r => r.AddAsync(It.IsAny<Event>())).ReturnsAsync((Event e) =>
         {
             e.Id = _generatedId;
             return e;
         });
-        _emailService = new Mock<IEmailService>();
-        _logger = new Mock<ILogger<CreateEventCommandHandler>>();
         _handler = new CreateEventCommandHandler(MapperFactory.Create(), _repository.Object, _emailService.Object, _logger.Object);
     }
 
@@ -42,14 +39,14 @@ public class CreateEventCommandHandlerTests
         CategoryId = Guid.NewGuid()
     };
 
-    [Test]
+    [Fact]
     public async Task Handle_ValidCommand_AddsMappedEvent_AndReturnsId()
     {
         var command = ValidCommand();
 
-        var id = await _handler.Handle(command, CancellationToken.None);
+        var id = await _handler.Handle(command, Ct);
 
-        Assert.That(id, Is.EqualTo(_generatedId));
+        Assert.Equal(_generatedId, id);
         _repository.Verify(r => r.AddAsync(It.Is<Event>(e =>
             e.Name == command.Name &&
             e.Description == command.Description &&
@@ -57,23 +54,23 @@ public class CreateEventCommandHandlerTests
             e.CategoryId == command.CategoryId)), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_ValidCommand_SendsNotificationEmail()
     {
-        await _handler.Handle(ValidCommand(), CancellationToken.None);
+        await _handler.Handle(ValidCommand(), Ct);
 
         _emailService.Verify(s => s.SendEmailAsync(It.Is<MailRequest>(m =>
             m.Subject == "A new event was created" && m.Body.Contains("Rock night"))), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_EmailFailure_IsLogged_AndDoesNotFailTheCommand()
     {
         _emailService.Setup(s => s.SendEmailAsync(It.IsAny<MailRequest>())).ThrowsAsync(new InvalidOperationException("smtp down"));
 
-        var id = await _handler.Handle(ValidCommand(), CancellationToken.None);
+        var id = await _handler.Handle(ValidCommand(), Ct);
 
-        Assert.That(id, Is.EqualTo(_generatedId));
+        Assert.Equal(_generatedId, id);
         _logger.Verify(l => l.Log(
             LogLevel.Error,
             It.IsAny<EventId>(),
@@ -82,15 +79,15 @@ public class CreateEventCommandHandlerTests
             It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
     }
 
-    [Test]
-    public void Handle_InvalidCommand_ThrowsValidationException_AndDoesNotPersist()
+    [Fact]
+    public async Task Handle_InvalidCommand_ThrowsValidationException_AndDoesNotPersist()
     {
         var command = ValidCommand();
         command.Name = string.Empty;
 
-        var ex = Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, CancellationToken.None));
+        var ex = await Assert.ThrowsAsync<ValidationException>(() => _handler.Handle(command, Ct));
 
-        Assert.That(ex.ValdationErrors, Is.Not.Empty);
+        Assert.NotEmpty(ex.ValdationErrors);
         _repository.Verify(r => r.AddAsync(It.IsAny<Event>()), Times.Never);
         _emailService.Verify(s => s.SendEmailAsync(It.IsAny<MailRequest>()), Times.Never);
     }

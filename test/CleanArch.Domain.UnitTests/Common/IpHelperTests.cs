@@ -6,13 +6,13 @@ namespace CleanArch.Domain.UnitTests.Common;
 
 public class IpHelperTests
 {
-    [Test]
+    [Fact]
     public void GetIpAddress_ReturnsEmptyOrAnIPv4Address()
     {
         var ip = IpHelper.GetIpAddress();
 
-        Assert.That(ip == string.Empty ||
+        Assert.True(ip == string.Empty ||
                     (IPAddress.TryParse(ip, out var parsed) && parsed.AddressFamily == AddressFamily.InterNetwork),
-            Is.True, $"Unexpected value '{ip}'");
+            $"Unexpected value '{ip}'");
     }
 }

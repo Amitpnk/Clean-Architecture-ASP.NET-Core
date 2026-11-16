@@ -10,17 +10,17 @@ namespace CleanArch.Application.UnitTests.Features.Events.Commands;
 
 public class UpdateEventCommandHandlerTests
 {
-    private Mock<IGenericRepositoryAsync<Event>> _repository;
-    private UpdateEventCommandHandler _handler;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<IGenericRepositoryAsync<Event>> _repository = new();
+    private readonly UpdateEventCommandHandler _handler;
+
+    public UpdateEventCommandHandlerTests()
     {
-        _repository = new Mock<IGenericRepositoryAsync<Event>>();
         _handler = new UpdateEventCommandHandler(MapperFactory.Create(), _repository.Object);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_ExistingEvent_MapsFieldsAndUpdates()
     {
         var existing = new Event { Id = Guid.NewGuid(), Name = "Old", Description = "kept", Date = DateTime.Today, CategoryId = Guid.NewGuid() };
@@ -33,7 +33,7 @@ public class UpdateEventCommandHandlerTests
             CategoryId = Guid.NewGuid()
         };
 
-        await _handler.Handle(command, CancellationToken.None);
+        await _handler.Handle(command, Ct);
 
         _repository.Verify(r => r.UpdateAsync(It.Is<Event>(e =>
             e.Id == existing.Id &&
@@ -43,59 +43,59 @@ public class UpdateEventCommandHandlerTests
             e.Description == "kept")), Times.Once);
     }
 
-    [Test]
-    public void Handle_UnknownEvent_ThrowsNotFound()
+    [Fact]
+    public async Task Handle_UnknownEvent_ThrowsNotFound()
     {
         _repository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Event)null);
 
-        Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.Handle(new UpdateEventCommand { EventId = Guid.NewGuid(), Name = "New" }, CancellationToken.None));
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            _handler.Handle(new UpdateEventCommand { EventId = Guid.NewGuid(), Name = "New" }, Ct));
     }
 
-    [Test]
-    public void Handle_InvalidName_ThrowsValidationException_AndDoesNotUpdate()
+    [Fact]
+    public async Task Handle_InvalidName_ThrowsValidationException_AndDoesNotUpdate()
     {
         var existing = new Event { Id = Guid.NewGuid(), Name = "Old" };
         _repository.Setup(r => r.GetByIdAsync(existing.Id)).ReturnsAsync(existing);
 
-        Assert.ThrowsAsync<ValidationException>(() =>
-            _handler.Handle(new UpdateEventCommand { EventId = existing.Id, Name = null }, CancellationToken.None));
+        await Assert.ThrowsAsync<ValidationException>(() =>
+            _handler.Handle(new UpdateEventCommand { EventId = existing.Id, Name = null }, Ct));
         _repository.Verify(r => r.UpdateAsync(It.IsAny<Event>()), Times.Never);
     }
 }
 
 public class DeleteEventCommandHandlerTests
 {
-    private Mock<IGenericRepositoryAsync<Event>> _repository;
-    private DeleteEventCommandHandler _handler;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<IGenericRepositoryAsync<Event>> _repository = new();
+    private readonly DeleteEventCommandHandler _handler;
+
+    public DeleteEventCommandHandlerTests()
     {
-        _repository = new Mock<IGenericRepositoryAsync<Event>>();
         _handler = new DeleteEventCommandHandler(_repository.Object);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_ExistingEvent_DeletesIt()
     {
         var existing = new Event { Id = Guid.NewGuid() };
         _repository.Setup(r => r.GetByIdAsync(existing.Id)).ReturnsAsync(existing);
 
-        await _handler.Handle(new DeleteEventCommand { EventId = existing.Id }, CancellationToken.None);
+        await _handler.Handle(new DeleteEventCommand { EventId = existing.Id }, Ct);
 
         _repository.Verify(r => r.DeleteAsync(existing), Times.Once);
     }
 
-    [Test]
-    public void Handle_UnknownEvent_ThrowsNotFound()
+    [Fact]
+    public async Task Handle_UnknownEvent_ThrowsNotFound()
     {
         _repository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Event)null);
 
-        var ex = Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.Handle(new DeleteEventCommand { EventId = Guid.NewGuid() }, CancellationToken.None));
+        var ex = await Assert.ThrowsAsync<NotFoundException>(() =>
+            _handler.Handle(new DeleteEventCommand { EventId = Guid.NewGuid() }, Ct));
 
-        Assert.That(ex.Message, Does.StartWith("Event ("));
+        Assert.StartsWith("Event (", ex.Message);
         _repository.Verify(r => r.DeleteAsync(It.IsAny<Event>()), Times.Never);
     }
 }

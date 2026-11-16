@@ -12,14 +12,12 @@ namespace CleanArch.Application.UnitTests.Mappings;
 
 public class MappingConfigTests
 {
-    private IMapper _mapper;
-    private Event _event;
-    private Category _category;
+    private readonly IMapper _mapper = MapperFactory.Create();
+    private readonly Category _category;
+    private readonly Event _event;
 
-    [SetUp]
-    public void SetUp()
+    public MappingConfigTests()
     {
-        _mapper = MapperFactory.Create();
         _category = new Category { Id = Guid.NewGuid(), Name = "Concert", Description = "Live music" };
         _event = new Event
         {
@@ -31,83 +29,69 @@ public class MappingConfigTests
         };
     }
 
-    [Test]
+    [Fact]
     public void Event_To_EventListVm_MapsIdToEventId()
     {
         var vm = _mapper.Map<EventListVm>(_event);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(vm.EventId, Is.EqualTo(_event.Id));
-            Assert.That(vm.Name, Is.EqualTo(_event.Name));
-            Assert.That(vm.Date, Is.EqualTo(_event.Date));
-        }
+        Assert.Equal(_event.Id, vm.EventId);
+        Assert.Equal(_event.Name, vm.Name);
+        Assert.Equal(_event.Date, vm.Date);
     }
 
-    [Test]
+    [Fact]
     public void Event_To_EventDetailVm_MapsIdToEventId()
     {
         var vm = _mapper.Map<EventDetailVm>(_event);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(vm.EventId, Is.EqualTo(_event.Id));
-            Assert.That(vm.Description, Is.EqualTo(_event.Description));
-            Assert.That(vm.CategoryId, Is.EqualTo(_event.CategoryId));
-        }
+        Assert.Equal(_event.Id, vm.EventId);
+        Assert.Equal(_event.Description, vm.Description);
+        Assert.Equal(_event.CategoryId, vm.CategoryId);
     }
 
-    [Test]
+    [Fact]
     public void Event_To_EventExportDto_MapsIdToEventId()
     {
-        var dto = _mapper.Map<EventExportDto>(_event);
-
-        Assert.That(dto.EventId, Is.EqualTo(_event.Id));
+        Assert.Equal(_event.Id, _mapper.Map<EventExportDto>(_event).EventId);
     }
 
-    [Test]
+    [Fact]
     public void Category_To_CategoryListVm_And_CreateCategoryDto_MapIdToCategoryId()
     {
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(_mapper.Map<CategoryListVm>(_category).CategoryId, Is.EqualTo(_category.Id));
-            Assert.That(_mapper.Map<CreateCategoryDto>(_category).CategoryId, Is.EqualTo(_category.Id));
-        }
+        Assert.Equal(_category.Id, _mapper.Map<CategoryListVm>(_category).CategoryId);
+        Assert.Equal(_category.Id, _mapper.Map<CreateCategoryDto>(_category).CategoryId);
     }
 
-    [Test]
+    [Fact]
     public void Category_To_CategoryDto_MapsByConvention()
     {
         var dto = _mapper.Map<CategoryDto>(_category);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(dto.Id, Is.EqualTo(_category.Id));
-            Assert.That(dto.Name, Is.EqualTo(_category.Name));
-        }
+        Assert.Equal(_category.Id, dto.Id);
+        Assert.Equal(_category.Name, dto.Name);
     }
 
-    [Test]
+    [Fact]
     public void CreateEventCommand_To_Event_MapsByConvention()
     {
         var command = new CreateEventCommand { Name = "Expo", Description = "d", Date = new DateTime(2027, 1, 1), CategoryId = Guid.NewGuid() };
 
         var entity = _mapper.Map<Event>(command);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(entity.Name, Is.EqualTo(command.Name));
-            Assert.That(entity.Description, Is.EqualTo(command.Description));
-            Assert.That(entity.Date, Is.EqualTo(command.Date));
-            Assert.That(entity.CategoryId, Is.EqualTo(command.CategoryId));
-        }
+        Assert.Equal(command.Name, entity.Name);
+        Assert.Equal(command.Description, entity.Description);
+        Assert.Equal(command.Date, entity.Date);
+        Assert.Equal(command.CategoryId, entity.CategoryId);
     }
 
-    [Test]
+    [Fact]
     public void CreateEventCommand_ToString_DescribesTheEvent()
     {
         var command = new CreateEventCommand { Name = "Expo", Description = "d", Date = new DateTime(2027, 1, 1) };
 
-        Assert.That(command.ToString(), Does.StartWith("Event name: Expo; On: ").And.EndWith("; Description: d"));
+        var text = command.ToString();
+
+        Assert.StartsWith("Event name: Expo; On: ", text);
+        Assert.EndsWith("; Description: d", text);
     }
 }

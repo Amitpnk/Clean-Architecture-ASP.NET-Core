@@ -13,17 +13,15 @@ namespace CleanArch.Api.UnitTests.Controllers;
 
 public class EventsControllerTests
 {
-    private Mock<IDispatcher> _dispatcher;
-    private EventsController _controller;
+    private readonly Mock<IDispatcher> _dispatcher = new();
+    private readonly EventsController _controller;
 
-    [SetUp]
-    public void SetUp()
+    public EventsControllerTests()
     {
-        _dispatcher = new Mock<IDispatcher>();
         _controller = new EventsController().WithDispatcher(_dispatcher);
     }
 
-    [Test]
+    [Fact]
     public async Task GetAll_ReturnsOkWithEvents()
     {
         var events = new List<EventListVm> { new() { EventId = Guid.NewGuid(), Name = "Expo" } };
@@ -31,10 +29,10 @@ public class EventsControllerTests
 
         var result = await _controller.GetAll();
 
-        Assert.That(((OkObjectResult)result).Value, Is.SameAs(events));
+        Assert.Same(events, Assert.IsType<OkObjectResult>(result).Value);
     }
 
-    [Test]
+    [Fact]
     public async Task GetEventById_QueriesById()
     {
         var id = Guid.NewGuid();
@@ -43,10 +41,10 @@ public class EventsControllerTests
 
         var result = await _controller.GetEventById(id);
 
-        Assert.That(((OkObjectResult)result).Value, Is.SameAs(detail));
+        Assert.Same(detail, Assert.IsType<OkObjectResult>(result).Value);
     }
 
-    [Test]
+    [Fact]
     public async Task Create_ReturnsOkWithNewId()
     {
         var id = Guid.NewGuid();
@@ -55,10 +53,10 @@ public class EventsControllerTests
 
         var result = await _controller.Create(command);
 
-        Assert.That(((OkObjectResult)result.Result!).Value, Is.EqualTo(id));
+        Assert.Equal(id, Assert.IsType<OkObjectResult>(result.Result).Value);
     }
 
-    [Test]
+    [Fact]
     public async Task Update_SendsCommand_AndReturnsNoContent()
     {
         var command = new UpdateEventCommand { EventId = Guid.NewGuid(), Name = "Expo" };
@@ -66,11 +64,11 @@ public class EventsControllerTests
 
         var result = await _controller.Update(command);
 
-        Assert.That(result, Is.InstanceOf<NoContentResult>());
+        Assert.IsType<NoContentResult>(result);
         _dispatcher.Verify(d => d.Send(command, It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task Delete_SendsCommandWithId_AndReturnsNoContent()
     {
         var id = Guid.NewGuid();
@@ -78,23 +76,20 @@ public class EventsControllerTests
 
         var result = await _controller.Delete(id);
 
-        Assert.That(result, Is.InstanceOf<NoContentResult>());
+        Assert.IsType<NoContentResult>(result);
         _dispatcher.Verify(d => d.Send(It.Is<DeleteEventCommand>(c => c.EventId == id), It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task ExportEvents_ReturnsFileWithContentTypeAndName()
     {
         var file = new EventExportFileVm { Data = [1, 2, 3], ContentType = "text/csv", EventExportFileName = "events.csv" };
         _dispatcher.Setup(d => d.Query(It.IsAny<GetEventsExportQuery>(), It.IsAny<CancellationToken>())).ReturnsAsync(file);
 
-        var result = (FileContentResult)await _controller.ExportEvents();
+        var result = Assert.IsType<FileContentResult>(await _controller.ExportEvents());
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result.FileContents, Is.EqualTo(file.Data));
-            Assert.That(result.ContentType, Is.EqualTo("text/csv"));
-            Assert.That(result.FileDownloadName, Is.EqualTo("events.csv"));
-        }
+        Assert.Equal(file.Data, result.FileContents);
+        Assert.Equal("text/csv", result.ContentType);
+        Assert.Equal("events.csv", result.FileDownloadName);
     }
 }

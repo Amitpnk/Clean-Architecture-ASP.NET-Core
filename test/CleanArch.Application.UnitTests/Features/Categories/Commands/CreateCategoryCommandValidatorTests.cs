@@ -7,79 +7,83 @@ namespace CleanArch.Application.UnitTests.Features.Categories.Commands;
 
 public class CreateCategoryCommandValidatorTests
 {
-    private Mock<ICategoryRepository> _repository;
-    private CreateCategoryCommandValidator _validator;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<ICategoryRepository> _repository = new();
+    private readonly CreateCategoryCommandValidator _validator;
+
+    public CreateCategoryCommandValidatorTests()
     {
-        _repository = new Mock<ICategoryRepository>();
         _repository.Setup(r => r.IsCategoryName(It.IsAny<string>())).ReturnsAsync(false);
         _validator = new CreateCategoryCommandValidator(_repository.Object);
     }
 
-    [Test]
+    [Fact]
     public async Task ValidName_IsValid()
     {
-        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = "Workshops" });
+        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = "Workshops" }, Ct);
 
-        Assert.That(result.IsValid, Is.True);
+        Assert.True(result.IsValid);
     }
 
-    [TestCase(null)]
-    [TestCase("")]
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
     public async Task MissingName_IsInvalid(string name)
     {
-        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = name });
+        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = name }, Ct);
 
-        Assert.That(result.Errors.Select(e => e.PropertyName), Does.Contain(nameof(CreateCategoryCommand.Name)));
+        Assert.Contains(nameof(CreateCategoryCommand.Name), result.Errors.Select(e => e.PropertyName));
     }
 
-    [Test]
+    [Fact]
     public async Task NameLongerThan50_IsInvalid()
     {
-        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = new string('x', 51) });
+        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = new string('x', 51) }, Ct);
 
-        Assert.That(result.IsValid, Is.False);
+        Assert.False(result.IsValid);
     }
 
-    [Test]
+    [Fact]
     public async Task DuplicateName_IsInvalid()
     {
         _repository.Setup(r => r.IsCategoryName("Concert")).ReturnsAsync(true);
 
-        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = "Concert" });
+        var result = await _validator.ValidateAsync(new CreateCategoryCommand { Name = "Concert" }, Ct);
 
-        Assert.That(result.Errors.Select(e => e.ErrorMessage), Does.Contain("An category with the same name already exists."));
+        Assert.Contains("An category with the same name already exists.", result.Errors.Select(e => e.ErrorMessage));
     }
 }
 
 public class UpdateCategoryCommandValidatorTests
 {
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     private readonly UpdateCategoryCommandValidator _validator = new();
 
-    [Test]
+    [Fact]
     public async Task ValidName_IsValid()
     {
-        var result = await _validator.ValidateAsync(new UpdateCategoryCommand { Name = "Plays" });
+        var result = await _validator.ValidateAsync(new UpdateCategoryCommand { Name = "Plays" }, Ct);
 
-        Assert.That(result.IsValid, Is.True);
+        Assert.True(result.IsValid);
     }
 
-    [TestCase(null)]
-    [TestCase("")]
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
     public async Task MissingName_IsInvalid(string name)
     {
-        var result = await _validator.ValidateAsync(new UpdateCategoryCommand { Name = name });
+        var result = await _validator.ValidateAsync(new UpdateCategoryCommand { Name = name }, Ct);
 
-        Assert.That(result.IsValid, Is.False);
+        Assert.False(result.IsValid);
     }
 
-    [Test]
+    [Fact]
     public async Task NameLongerThan50_IsInvalid()
     {
-        var result = await _validator.ValidateAsync(new UpdateCategoryCommand { Name = new string('x', 51) });
+        var result = await _validator.ValidateAsync(new UpdateCategoryCommand { Name = new string('x', 51) }, Ct);
 
-        Assert.That(result.Errors.Single().ErrorMessage, Is.EqualTo("Name must not exceed 50 characters."));
+        Assert.Equal("Name must not exceed 50 characters.", Assert.Single(result.Errors).ErrorMessage);
     }
 }

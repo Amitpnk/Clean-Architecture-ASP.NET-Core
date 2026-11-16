@@ -10,17 +10,15 @@ namespace CleanArch.Api.UnitTests.Controllers;
 
 public class CategoryControllerTests
 {
-    private Mock<IDispatcher> _dispatcher;
-    private CategoryController _controller;
+    private readonly Mock<IDispatcher> _dispatcher = new();
+    private readonly CategoryController _controller;
 
-    [SetUp]
-    public void SetUp()
+    public CategoryControllerTests()
     {
-        _dispatcher = new Mock<IDispatcher>();
         _controller = new CategoryController().WithDispatcher(_dispatcher);
     }
 
-    [Test]
+    [Fact]
     public async Task GetAllCategories_ReturnsOkWithQueryResult()
     {
         var categories = new List<CategoryListVm> { new() { CategoryId = Guid.NewGuid(), Name = "Concert" } };
@@ -28,11 +26,12 @@ public class CategoryControllerTests
 
         var result = await _controller.GetAllCategories();
 
-        Assert.That(((OkObjectResult)result.Result!).Value, Is.SameAs(categories));
+        Assert.Same(categories, Assert.IsType<OkObjectResult>(result.Result).Value);
     }
 
-    [TestCase(true)]
-    [TestCase(false)]
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task GetCategoriesWithEvents_ForwardsIncludeHistory(bool includeHistory)
     {
         var categories = new List<CategoryEventListVm>();
@@ -40,13 +39,13 @@ public class CategoryControllerTests
 
         var result = await _controller.GetCategoriesWithEvents(includeHistory);
 
-        Assert.That(((OkObjectResult)result.Result!).Value, Is.SameAs(categories));
+        Assert.Same(categories, Assert.IsType<OkObjectResult>(result.Result).Value);
         _dispatcher.Verify(d => d.Query(
             It.Is<GetCategoriesListWithEventsQuery>(q => q.IncludeHistory == includeHistory),
             It.IsAny<CancellationToken>()), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task Create_SendsCommand_AndReturnsOkWithResponse()
     {
         var command = new CreateCategoryCommand { Name = "Workshops" };
@@ -55,6 +54,6 @@ public class CategoryControllerTests
 
         var result = await _controller.Create(command);
 
-        Assert.That(((OkObjectResult)result.Result!).Value, Is.SameAs(response));
+        Assert.Same(response, Assert.IsType<OkObjectResult>(result.Result).Value);
     }
 }

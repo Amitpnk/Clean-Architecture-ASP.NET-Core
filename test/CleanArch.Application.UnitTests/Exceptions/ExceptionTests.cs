@@ -5,46 +5,43 @@ namespace CleanArch.Application.UnitTests.Exceptions;
 
 public class ExceptionTests
 {
-    [Test]
+    [Fact]
     public void NotFoundException_FormatsNameAndKey()
     {
         var ex = new NotFoundException("Event", 42);
 
-        Assert.That(ex.Message, Is.EqualTo("Event (42) is not found"));
+        Assert.Equal("Event (42) is not found", ex.Message);
     }
 
-    [Test]
+    [Fact]
     public void BadRequestException_KeepsMessage()
     {
-        Assert.That(new BadRequestException("bad").Message, Is.EqualTo("bad"));
+        Assert.Equal("bad", new BadRequestException("bad").Message);
     }
 
-    [Test]
+    [Fact]
     public void ApiException_FormatsArguments()
     {
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(new ApiException("plain").Message, Is.EqualTo("plain"));
-            Assert.That(new ApiException("{0} and {1}", "a", 2).Message, Is.EqualTo("a and 2"));
-            Assert.That(new ApiException().Message, Is.Not.Null);
-        }
+        Assert.Equal("plain", new ApiException("plain").Message);
+        Assert.Equal("a and 2", new ApiException("{0} and {1}", "a", 2).Message);
+        Assert.NotNull(new ApiException().Message);
     }
 
-    [Test]
+    [Fact]
     public void ValidationException_CollectsEveryErrorMessage()
     {
         var result = new ValidationResult([new ValidationFailure("Name", "required"), new ValidationFailure("Date", "in the past")]);
 
         var ex = new ValidationException(result);
 
-        Assert.That(ex.ValdationErrors, Is.EqualTo(new[] { "required", "in the past" }));
+        Assert.Equal(["required", "in the past"], ex.ValdationErrors);
     }
 
-    [Test]
+    [Fact]
     public void ValidationException_WithNoFailures_HasEmptyList()
     {
         var ex = new ValidationException(new ValidationResult());
 
-        Assert.That(ex.ValdationErrors, Is.Empty);
+        Assert.Empty(ex.ValdationErrors);
     }
 }

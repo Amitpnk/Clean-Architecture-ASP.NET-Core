@@ -110,7 +110,7 @@ Monitoring tool
 - [ ] Kibana dashboard  
 
 Testing
-- [x] Unit testing for every layer (NUnit 4, Moq, EF Core InMemory)
+- [x] Unit testing for every layer (xUnit v3, Moq, EF Core InMemory)
 - [x] Integration testing (xUnit v3 + Testcontainers: real SQL Server in Docker; `WebApplicationFactory` for the API)
 
 Caching
@@ -147,11 +147,11 @@ Sign in with `superadmin@gmail.com` / `Password@123`. Override the SQL `sa` pass
 
 | Project | Framework | Covers |
 | --- | --- | --- |
-| `CleanArch.Domain.UnitTests` | NUnit | `BaseResponse`, `ValueObject`, entities, request validation attributes |
-| `CleanArch.Application.UnitTests` | NUnit | Every command/query handler and validator, CQRS dispatcher, mappings, exceptions, exception middleware |
-| `CleanArch.Infrastructure.UnitTests` | NUnit | CSV export, logged-in user, clock, service registration |
-| `CleanArch.Persistence.UnitTests` | NUnit | Repositories, audit trail, seed data, `AuthenticationService` (real Identity over EF InMemory) |
-| `CleanArch.Api.UnitTests` | NUnit | Controllers (mocked dispatcher), Swagger file-result filter |
+| `CleanArch.Domain.UnitTests` | xUnit v3 | `BaseResponse`, `ValueObject`, entities, request validation attributes |
+| `CleanArch.Application.UnitTests` | xUnit v3 | Every command/query handler and validator, CQRS dispatcher, mappings, exceptions, exception middleware |
+| `CleanArch.Infrastructure.UnitTests` | xUnit v3 | CSV export, logged-in user, clock, service registration |
+| `CleanArch.Persistence.UnitTests` | xUnit v3 | Repositories, audit trail, seed data, `AuthenticationService` (real Identity over EF InMemory) |
+| `CleanArch.Api.UnitTests` | xUnit v3 | Controllers (mocked dispatcher), Swagger file-result filter |
 | `CleanArch.Persistence.IntegrationTests` | xUnit v3 | Migrations and repositories against real SQL Server |
 | `CleanArch.Api.IntegrationTests` | xUnit v3 | HTTP endpoints and JWT auth against real SQL Server |
 

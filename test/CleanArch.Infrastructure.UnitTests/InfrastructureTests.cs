@@ -3,7 +3,6 @@ using System.Text;
 using CleanArch.Application.Contracts.Infrastructure;
 using CleanArch.Application.Features.Events.Queries.GetEventsExport;
 using CleanArch.Domain.Services.Mail;
-using CleanArch.Infrastructure;
 using CleanArch.Infrastructure.FileExport;
 using CleanArch.Infrastructure.Identity;
 using CleanArch.Infrastructure.Mail;
@@ -18,43 +17,38 @@ namespace CleanArch.Infrastructure.UnitTests;
 
 public class CsvExporterTests
 {
-    [Test]
+    private static string[] ExportLines(List<EventExportDto> dtos) =>
+        Encoding.UTF8.GetString(new CsvExporter().ExportEventsToCsv(dtos))
+            .TrimStart('﻿')
+            .Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
+
+    [Fact]
     public void ExportEventsToCsv_WritesHeaderAndOneRowPerEvent()
     {
         var id = Guid.NewGuid();
-        var dtos = new List<EventExportDto>
-        {
-            new() { EventId = id, Name = "Rock night", Date = new DateTime(2027, 6, 1, 18, 30, 0) }
-        };
 
-        var csv = Encoding.UTF8.GetString(new CsvExporter().ExportEventsToCsv(dtos)).TrimStart('﻿');
-        var lines = csv.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
+        var lines = ExportLines([new() { EventId = id, Name = "Rock night", Date = new DateTime(2027, 6, 1, 18, 30, 0) }]);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(lines, Has.Length.EqualTo(2));
-            Assert.That(lines[0], Is.EqualTo("EventId,Name,Date"));
-            Assert.That(lines[1], Does.StartWith($"{id},Rock night,"));
-            Assert.That(lines[1], Does.Contain("2027"));
-        }
+        Assert.Equal(2, lines.Length);
+        Assert.Equal("EventId,Name,Date", lines[0]);
+        Assert.StartsWith($"{id},Rock night,", lines[1]);
+        Assert.Contains("2027", lines[1]);
     }
 
-    [Test]
+    [Fact]
     public void ExportEventsToCsv_QuotesFieldsContainingSeparators()
     {
-        var dtos = new List<EventExportDto> { new() { EventId = Guid.NewGuid(), Name = "Rock, Pop", Date = DateTime.Today } };
+        var lines = ExportLines([new() { EventId = Guid.NewGuid(), Name = "Rock, Pop", Date = DateTime.Today }]);
 
-        var csv = Encoding.UTF8.GetString(new CsvExporter().ExportEventsToCsv(dtos));
-
-        Assert.That(csv, Does.Contain("\"Rock, Pop\""));
+        Assert.Contains("\"Rock, Pop\"", lines[1]);
     }
 
-    [Test]
-    public void ExportEventsToCsv_EmptyList_WritesHeaderOnly()
+    [Fact]
+    public void ExportEventsToCsv_EmptyList_WritesAtMostTheHeader()
     {
-        var csv = Encoding.UTF8.GetString(new CsvExporter().ExportEventsToCsv([])).TrimStart('﻿');
+        var lines = ExportLines([]);
 
-        Assert.That(csv.Trim(), Is.EqualTo("EventId,Name,Date").Or.Empty);
+        Assert.True(lines.Length == 0 || lines is ["EventId,Name,Date"]);
     }
 }
 
@@ -72,77 +66,65 @@ public class LoggedInUserServiceTests
         User = new ClaimsPrincipal(new ClaimsIdentity(claims, authenticationType: claims.Length > 0 ? "Bearer" : null))
     };
 
-    [Test]
+    [Fact]
     public void NoHttpContext_IsAnonymous()
     {
         var service = Create(null);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(service.IsAuthenticated, Is.False);
-            Assert.That(service.UserId, Is.Null);
-            Assert.That(service.Claims, Is.Null);
-            Assert.That(service.GetUserId(), Is.Null);
-        }
+        Assert.False(service.IsAuthenticated);
+        Assert.Null(service.UserId);
+        Assert.Null(service.Claims);
+        Assert.Null(service.GetUserId());
     }
 
-    [Test]
+    [Fact]
     public void AuthenticatedUser_ExposesNameIdentifierAndClaims()
     {
         var service = Create(ContextWith(new Claim(ClaimTypes.NameIdentifier, "user-1"), new Claim("email", "a@b.c")));
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(service.IsAuthenticated, Is.True);
-            Assert.That(service.UserId, Is.EqualTo("user-1"));
-            Assert.That(service.GetUserId(), Is.EqualTo("user-1"));
-            Assert.That(service.Claims, Does.Contain(new KeyValuePair<string, string>("email", "a@b.c")));
-        }
+        Assert.True(service.IsAuthenticated);
+        Assert.Equal("user-1", service.UserId);
+        Assert.Equal("user-1", service.GetUserId());
+        Assert.Contains(new KeyValuePair<string, string>("email", "a@b.c"), service.Claims);
     }
 
-    [Test]
+    [Fact]
     public void SubClaim_IsUsedWhenNameIdentifierMissing()
     {
         var service = Create(ContextWith(new Claim("sub", "superadmin")));
 
-        Assert.That(service.UserId, Is.EqualTo("superadmin"));
+        Assert.Equal("superadmin", service.UserId);
     }
 
-    [Test]
+    [Fact]
     public void UnauthenticatedPrincipal_IsNotAuthenticated()
     {
         var service = Create(ContextWith());
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(service.IsAuthenticated, Is.False);
-            Assert.That(service.UserId, Is.Null);
-        }
+        Assert.False(service.IsAuthenticated);
+        Assert.Null(service.UserId);
     }
 }
 
 public class DateTimeProviderTests
 {
-    [Test]
+    [Fact]
     public void ReturnsCurrentTimes_InTheRightKind()
     {
         var provider = new DateTimeProvider();
         var tolerance = TimeSpan.FromSeconds(5);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(provider.Now, Is.EqualTo(DateTime.Now).Within(tolerance));
-            Assert.That(provider.UtcNow, Is.EqualTo(DateTime.UtcNow).Within(tolerance));
-            Assert.That(provider.UtcNow.Kind, Is.EqualTo(DateTimeKind.Utc));
-            Assert.That(provider.OffsetNow, Is.EqualTo(DateTimeOffset.Now).Within(tolerance));
-            Assert.That(provider.OffsetUtcNow.Offset, Is.EqualTo(TimeSpan.Zero));
-        }
+        Assert.Equal(DateTime.Now, provider.Now, tolerance);
+        Assert.Equal(DateTime.UtcNow, provider.UtcNow, tolerance);
+        Assert.Equal(DateTimeKind.Utc, provider.UtcNow.Kind);
+        Assert.Equal(DateTimeOffset.Now, provider.OffsetNow, tolerance);
+        Assert.Equal(TimeSpan.Zero, provider.OffsetUtcNow.Offset);
     }
 }
 
 public class InfrastructureServiceRegistrationTests
 {
-    [Test]
+    [Fact]
     public void AddInfrastructureServices_RegistersServices_AndBindsMailSettings()
     {
         var configuration = new ConfigurationBuilder()
@@ -160,13 +142,10 @@ public class InfrastructureServiceRegistrationTests
             .BuildServiceProvider();
 
         var mail = provider.GetRequiredService<IOptions<MailSettings>>().Value;
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(provider.GetService<IEmailService>(), Is.InstanceOf<EmailService>());
-            Assert.That(provider.GetService<ICsvExporter>(), Is.InstanceOf<CsvExporter>());
-            Assert.That(mail.Mail, Is.EqualTo("noreply@example.com"));
-            Assert.That(mail.Host, Is.EqualTo("smtp.example.com"));
-            Assert.That(mail.Port, Is.EqualTo(2525));
-        }
+        Assert.IsType<EmailService>(provider.GetService<IEmailService>());
+        Assert.IsType<CsvExporter>(provider.GetService<ICsvExporter>());
+        Assert.Equal("noreply@example.com", mail.Mail);
+        Assert.Equal("smtp.example.com", mail.Host);
+        Assert.Equal(2525, mail.Port);
     }
 }

@@ -9,48 +9,48 @@ namespace CleanArch.Application.UnitTests.Features.Categories.Commands;
 
 public class UpdateCategoryCommandHandlerTests
 {
-    private Mock<IGenericRepositoryAsync<Category>> _repository;
-    private UpdateCategoryCommandHandler _handler;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<IGenericRepositoryAsync<Category>> _repository = new();
+    private readonly UpdateCategoryCommandHandler _handler;
+
+    public UpdateCategoryCommandHandlerTests()
     {
-        _repository = new Mock<IGenericRepositoryAsync<Category>>();
         _handler = new UpdateCategoryCommandHandler(MapperFactory.Create(), _repository.Object);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_ExistingCategory_MapsNameAndUpdates()
     {
         var existing = new Category { Id = Guid.NewGuid(), Name = "Old", Description = "kept" };
         _repository.Setup(r => r.GetByIdAsync(existing.Id)).ReturnsAsync(existing);
 
-        await _handler.Handle(new UpdateCategoryCommand { CategoryId = existing.Id, Name = "New" }, CancellationToken.None);
+        await _handler.Handle(new UpdateCategoryCommand { CategoryId = existing.Id, Name = "New" }, Ct);
 
         _repository.Verify(r => r.UpdateAsync(It.Is<Category>(c =>
             c.Id == existing.Id && c.Name == "New" && c.Description == "kept")), Times.Once);
     }
 
-    [Test]
-    public void Handle_UnknownCategory_ThrowsNotFound()
+    [Fact]
+    public async Task Handle_UnknownCategory_ThrowsNotFound()
     {
         _repository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Category)null);
 
-        Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.Handle(new UpdateCategoryCommand { CategoryId = Guid.NewGuid(), Name = "New" }, CancellationToken.None));
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            _handler.Handle(new UpdateCategoryCommand { CategoryId = Guid.NewGuid(), Name = "New" }, Ct));
         _repository.Verify(r => r.UpdateAsync(It.IsAny<Category>()), Times.Never);
     }
 
-    [Test]
-    public void Handle_InvalidName_ThrowsValidationException_AndDoesNotUpdate()
+    [Fact]
+    public async Task Handle_InvalidName_ThrowsValidationException_AndDoesNotUpdate()
     {
         var existing = new Category { Id = Guid.NewGuid(), Name = "Old" };
         _repository.Setup(r => r.GetByIdAsync(existing.Id)).ReturnsAsync(existing);
 
-        var ex = Assert.ThrowsAsync<ValidationException>(() =>
-            _handler.Handle(new UpdateCategoryCommand { CategoryId = existing.Id, Name = "" }, CancellationToken.None));
+        var ex = await Assert.ThrowsAsync<ValidationException>(() =>
+            _handler.Handle(new UpdateCategoryCommand { CategoryId = existing.Id, Name = "" }, Ct));
 
-        Assert.That(ex.ValdationErrors, Is.Not.Empty);
+        Assert.NotEmpty(ex.ValdationErrors);
         _repository.Verify(r => r.UpdateAsync(It.IsAny<Category>()), Times.Never);
     }
 }

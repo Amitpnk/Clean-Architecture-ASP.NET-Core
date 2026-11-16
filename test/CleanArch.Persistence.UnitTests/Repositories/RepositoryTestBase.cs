@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CleanArch.Persistence.UnitTests.Repositories;
 
-/// <summary>Fresh in-memory <see cref="ApplicationDbContext"/> per test, with HasData seed applied.</summary>
-public abstract class RepositoryTestBase
+/// <summary>
+/// xUnit creates a new instance per test, so each test gets a fresh in-memory
+/// <see cref="ApplicationDbContext"/> with the HasData seed applied.
+/// </summary>
+public abstract class RepositoryTestBase : IDisposable
 {
     protected static readonly DateTime FixedUtcNow = new(2026, 1, 1, 12, 0, 0, DateTimeKind.Utc);
 
-    protected ApplicationDbContext DbContext { get; private set; }
-
-    [SetUp]
-    public void CreateContext()
+    protected RepositoryTestBase()
     {
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseInMemoryDatabase($"CleanArch-{Guid.NewGuid()}")
@@ -23,8 +23,15 @@ public abstract class RepositoryTestBase
         DbContext.Database.EnsureCreated();
     }
 
-    [TearDown]
-    public void DisposeContext() => DbContext.Dispose();
+    protected ApplicationDbContext DbContext { get; }
+
+    protected static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    public void Dispose()
+    {
+        DbContext.Dispose();
+        GC.SuppressFinalize(this);
+    }
 
     private sealed class FakeLoggedInUser : ILoggedInUserService
     {

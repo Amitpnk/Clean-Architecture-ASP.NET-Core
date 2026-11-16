@@ -11,15 +11,12 @@ namespace CleanArch.Api.UnitTests.Controllers;
 
 public class AccountControllerTests
 {
-    private Mock<IAuthenticationService> _auth;
-    private AccountController _controller;
-    private DefaultHttpContext _httpContext;
+    private readonly Mock<IAuthenticationService> _auth = new();
+    private readonly DefaultHttpContext _httpContext = new();
+    private readonly AccountController _controller;
 
-    [SetUp]
-    public void SetUp()
+    public AccountControllerTests()
     {
-        _auth = new Mock<IAuthenticationService>();
-        _httpContext = new DefaultHttpContext();
         _httpContext.Request.Scheme = "https";
         _httpContext.Request.Host = new HostString("api.example.com");
         _controller = new AccountController(_auth.Object)
@@ -28,7 +25,7 @@ public class AccountControllerTests
         };
     }
 
-    [Test]
+    [Fact]
     public async Task Authenticate_ReturnsOkWithServiceResponse()
     {
         var request = new AuthenticationRequest { Email = "a@b.c", Password = "p" };
@@ -37,10 +34,10 @@ public class AccountControllerTests
 
         var result = await _controller.AuthenticateAsync(request);
 
-        Assert.That(((OkObjectResult)result).Value, Is.SameAs(response));
+        Assert.Same(response, Assert.IsType<OkObjectResult>(result).Value);
     }
 
-    [Test]
+    [Fact]
     public async Task Register_UsesOriginHeader_WhenPresent()
     {
         _httpContext.Request.Headers.Origin = "https://app.example.com";
@@ -51,7 +48,7 @@ public class AccountControllerTests
         _auth.Verify(a => a.RegisterAsync(request, "https://app.example.com"), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task Register_FallsBackToRequestBaseUrl_WithoutOriginHeader()
     {
         _httpContext.Request.PathBase = "/v";
@@ -62,7 +59,7 @@ public class AccountControllerTests
         _auth.Verify(a => a.RegisterAsync(request, "https://api.example.com/v"), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task ConfirmEmail_ForwardsUserIdAndCode()
     {
         var response = new BaseResponse<string>("user-1", "ok");
@@ -70,21 +67,21 @@ public class AccountControllerTests
 
         var result = await _controller.ConfirmEmailAsync("user-1", "code");
 
-        Assert.That(((OkObjectResult)result).Value, Is.SameAs(response));
+        Assert.Same(response, Assert.IsType<OkObjectResult>(result).Value);
     }
 
-    [Test]
+    [Fact]
     public async Task ForgotPassword_ReturnsOk_AndPassesOrigin()
     {
         var request = new ForgotPasswordRequest { Email = "a@b.c" };
 
         var result = await _controller.ForgotPassword(request);
 
-        Assert.That(result, Is.InstanceOf<OkResult>());
+        Assert.IsType<OkResult>(result);
         _auth.Verify(a => a.ForgotPassword(request, "https://api.example.com"), Times.Once);
     }
 
-    [Test]
+    [Fact]
     public async Task ResetPassword_ReturnsOkWithServiceResponse()
     {
         var request = new ResetPasswordRequest { Email = "a@b.c" };
@@ -93,17 +90,19 @@ public class AccountControllerTests
 
         var result = await _controller.ResetPassword(request);
 
-        Assert.That(((OkObjectResult)result).Value, Is.SameAs(response));
+        Assert.Same(response, Assert.IsType<OkObjectResult>(result).Value);
     }
 }
 
 public class MetaControllerTests
 {
-    [Test]
+    [Fact]
     public void Info_ReturnsVersionAndLastUpdate()
     {
         var result = new MetaController().Info();
 
-        Assert.That((string)((OkObjectResult)result.Result!).Value!, Does.StartWith("Version: ").And.Contains("Last Updated: "));
+        var text = Assert.IsType<string>(Assert.IsType<OkObjectResult>(result.Result).Value);
+        Assert.StartsWith("Version: ", text);
+        Assert.Contains("Last Updated: ", text);
     }
 }

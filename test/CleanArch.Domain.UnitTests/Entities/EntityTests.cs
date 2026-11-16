@@ -8,36 +8,32 @@ namespace CleanArch.Domain.UnitTests.Entities;
 
 public class EntityTests
 {
-    [Test]
+    [Fact]
     public void Entities_AreAuditableAndKeyed()
     {
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(new Category(), Is.InstanceOf<AuditableEntity>().And.InstanceOf<IHasKey<Guid>>());
-            Assert.That(new Event(), Is.InstanceOf<AuditableEntity>().And.InstanceOf<IHasKey<Guid>>());
-            Assert.That(new AuditTrail(), Is.InstanceOf<IHasKey<int>>());
-        }
+        Assert.IsAssignableFrom<AuditableEntity>(new Category());
+        Assert.IsAssignableFrom<IHasKey<Guid>>(new Category());
+        Assert.IsAssignableFrom<AuditableEntity>(new Event());
+        Assert.IsAssignableFrom<IHasKey<Guid>>(new Event());
+        Assert.IsAssignableFrom<IHasKey<int>>(new AuditTrail());
     }
 
-    [Test]
+    [Fact]
     public void BaseEntity_Id_IsMarkedAsKey()
     {
         var idProperty = typeof(BaseEntity<Guid>).GetProperty(nameof(BaseEntity<Guid>.Id))!;
 
-        Assert.That(idProperty.GetCustomAttributes(typeof(KeyAttribute), false), Is.Not.Empty);
+        Assert.NotEmpty(idProperty.GetCustomAttributes(typeof(KeyAttribute), false));
     }
 
-    [Test]
+    [Fact]
     public void RoleConstants_AreDistinct_AndCoverEveryRole()
     {
-        var roleIds = new[] { Constants.SuperAdmin, Constants.Admin, Constants.Moderator, Constants.Basic };
+        string[] roleIds = [Constants.SuperAdmin, Constants.Admin, Constants.Moderator, Constants.Basic];
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(roleIds, Is.Unique);
-            Assert.That(System.Enum.GetNames<Roles>(), Has.Length.EqualTo(roleIds.Length));
-            Assert.That(Constants.SuperAdminUser, Is.Not.EqualTo(Constants.BasicUser));
-        }
+        Assert.Equal(roleIds.Length, roleIds.Distinct().Count());
+        Assert.Equal(roleIds.Length, System.Enum.GetNames<Roles>().Length);
+        Assert.NotEqual(Constants.SuperAdminUser, Constants.BasicUser);
     }
 }
 
@@ -50,7 +46,7 @@ public class AuthenticationRequestValidationTests
         return results;
     }
 
-    [Test]
+    [Fact]
     public void RegistrationRequest_Valid_HasNoErrors()
     {
         var request = new RegistrationRequest
@@ -62,20 +58,20 @@ public class AuthenticationRequestValidationTests
             Password = "Password@123"
         };
 
-        Assert.That(Validate(request), Is.Empty);
+        Assert.Empty(Validate(request));
     }
 
-    [Test]
+    [Fact]
     public void RegistrationRequest_Invalid_ReportsEachField()
     {
         var request = new RegistrationRequest { Email = "not-an-email", UserName = "abc", Password = "123" };
 
-        var members = Validate(request).SelectMany(r => r.MemberNames).ToList();
+        var members = Validate(request).SelectMany(r => r.MemberNames).ToHashSet();
 
-        Assert.That(members, Is.SupersetOf(new[] { "FirstName", "LastName", "Email", "UserName", "Password" }));
+        Assert.Superset(new HashSet<string> { "FirstName", "LastName", "Email", "UserName", "Password" }, members);
     }
 
-    [Test]
+    [Fact]
     public void ResetPasswordRequest_MismatchedConfirmation_IsInvalid()
     {
         var request = new ResetPasswordRequest
@@ -86,17 +82,15 @@ public class AuthenticationRequestValidationTests
             ConfirmPassword = "Different@123"
         };
 
-        Assert.That(Validate(request).SelectMany(r => r.MemberNames), Does.Contain("ConfirmPassword"));
+        Assert.Contains("ConfirmPassword", Validate(request).SelectMany(r => r.MemberNames));
     }
 
-    [Test]
-    public void ForgotPasswordRequest_RequiresValidEmail()
+    [Theory]
+    [InlineData(null, false)]
+    [InlineData("bad", false)]
+    [InlineData("someone@example.com", true)]
+    public void ForgotPasswordRequest_RequiresValidEmail(string email, bool valid)
     {
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(Validate(new ForgotPasswordRequest()), Is.Not.Empty);
-            Assert.That(Validate(new ForgotPasswordRequest { Email = "bad" }), Is.Not.Empty);
-            Assert.That(Validate(new ForgotPasswordRequest { Email = "someone@example.com" }), Is.Empty);
-        }
+        Assert.Equal(valid, Validate(new ForgotPasswordRequest { Email = email }).Count == 0);
     }
 }

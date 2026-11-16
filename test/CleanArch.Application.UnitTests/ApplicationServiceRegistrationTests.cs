@@ -9,18 +9,15 @@ namespace CleanArch.Application.UnitTests;
 
 public class ApplicationServiceRegistrationTests
 {
-    [Test]
+    [Fact]
     public void AddApplicationServices_RegistersDispatcherMapperAndValidators()
     {
         using var provider = new ServiceCollection().AddApplicationServices().BuildServiceProvider();
         using var scope = provider.CreateScope();
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(scope.ServiceProvider.GetService<IDispatcher>(), Is.Not.Null);
-            Assert.That(scope.ServiceProvider.GetService<IMapper>(), Is.Not.Null);
-            Assert.That(scope.ServiceProvider.GetService<IValidator<UpdateCategoryCommand>>(), Is.InstanceOf<UpdateCategoryCommandValidator>());
-            Assert.That(scope.ServiceProvider.GetService<IValidator<UpdateEventCommand>>(), Is.InstanceOf<UpdateEventCommandValidator>());
-        }
+        Assert.NotNull(scope.ServiceProvider.GetService<IDispatcher>());
+        Assert.NotNull(scope.ServiceProvider.GetService<IMapper>());
+        Assert.IsType<UpdateCategoryCommandValidator>(scope.ServiceProvider.GetService<IValidator<UpdateCategoryCommand>>());
+        Assert.IsType<UpdateEventCommandValidator>(scope.ServiceProvider.GetService<IValidator<UpdateEventCommand>>());
     }
 }

@@ -4,59 +4,47 @@ namespace CleanArch.Domain.UnitTests.Common;
 
 public class BaseResponseTests
 {
-    [Test]
+    [Fact]
     public void DefaultConstructor_IsSuccessful_WithNoMessageOrData()
     {
         var response = new BaseResponse<string>();
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(response.Success, Is.True);
-            Assert.That(response.Message, Is.Null);
-            Assert.That(response.Data, Is.Null);
-            Assert.That(response.ValidationErrors, Is.Null);
-        }
+        Assert.True(response.Success);
+        Assert.Null(response.Message);
+        Assert.Null(response.Data);
+        Assert.Null(response.ValidationErrors);
     }
 
-    [Test]
+    [Fact]
     public void MessageConstructor_IsSuccessful_WithMessage()
     {
         var response = new BaseResponse<int>("done");
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(response.Success, Is.True);
-            Assert.That(response.Message, Is.EqualTo("done"));
-            Assert.That(response.Data, Is.Zero);
-        }
+        Assert.True(response.Success);
+        Assert.Equal("done", response.Message);
+        Assert.Equal(0, response.Data);
     }
 
-    [Test]
+    [Fact]
     public void DataConstructor_SetsDataAndOptionalMessage()
     {
         var withMessage = new BaseResponse<int>(42, "answer");
         var withoutMessage = new BaseResponse<int>(7);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(withMessage.Data, Is.EqualTo(42));
-            Assert.That(withMessage.Message, Is.EqualTo("answer"));
-            Assert.That(withMessage.Success, Is.True);
-            Assert.That(withoutMessage.Data, Is.EqualTo(7));
-            Assert.That(withoutMessage.Message, Is.Null);
-        }
+        Assert.Equal(42, withMessage.Data);
+        Assert.Equal("answer", withMessage.Message);
+        Assert.True(withMessage.Success);
+        Assert.Equal(7, withoutMessage.Data);
+        Assert.Null(withoutMessage.Message);
     }
 
-    [Test]
+    [Fact]
     public void PrimaryConstructor_CanRepresentFailure()
     {
         var response = new BaseResponse<string>("failed", false) { ValidationErrors = ["Name is required."] };
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(response.Success, Is.False);
-            Assert.That(response.Message, Is.EqualTo("failed"));
-            Assert.That(response.ValidationErrors, Has.Count.EqualTo(1));
-        }
+        Assert.False(response.Success);
+        Assert.Equal("failed", response.Message);
+        Assert.Single(response.ValidationErrors);
     }
 }

@@ -25,7 +25,7 @@ namespace CleanArch.Persistence.UnitTests.Repositories;
 /// Exercises <see cref="AuthenticationService"/> with the real ASP.NET Core Identity stack
 /// (UserManager, SignInManager, token providers) over an EF Core in-memory store with the seed data.
 /// </summary>
-public class AuthenticationServiceTests
+public sealed class AuthenticationServiceTests : IDisposable
 {
     private const string Origin = "https://cleanarch.test";
     private const string SeededEmail = "superadmin@gmail.com";
@@ -39,22 +39,18 @@ public class AuthenticationServiceTests
         DurationInMinutes = 30
     };
 
-    private ServiceProvider _provider;
-    private IServiceScope _scope;
-    private Mock<IEmailService> _emailService;
-    private Mock<IFeatureManager> _featureManager;
-    private List<MailRequest> _sentEmails;
-    private AuthenticationService _service;
+    private readonly ServiceProvider _provider;
+    private readonly IServiceScope _scope;
+    private readonly Mock<IEmailService> _emailService = new();
+    private readonly Mock<IFeatureManager> _featureManager = new();
+    private readonly List<MailRequest> _sentEmails = [];
+    private readonly AuthenticationService _service;
 
-    [SetUp]
-    public void SetUp()
+    public AuthenticationServiceTests()
     {
-        _sentEmails = [];
-        _emailService = new Mock<IEmailService>();
         _emailService.Setup(s => s.SendEmailAsync(It.IsAny<MailRequest>()))
             .Callback<MailRequest>(_sentEmails.Add)
             .Returns(Task.CompletedTask);
-        _featureManager = new Mock<IFeatureManager>();
         _featureManager.Setup(f => f.IsEnabledAsync(It.IsAny<string>())).ReturnsAsync(false);
 
         var databaseName = $"auth-{Guid.NewGuid()}";
@@ -89,8 +85,7 @@ public class AuthenticationServiceTests
         _service = _scope.ServiceProvider.GetRequiredService<AuthenticationService>();
     }
 
-    [TearDown]
-    public void TearDown()
+    public void Dispose()
     {
         _scope.Dispose();
         _provider.Dispose();
@@ -116,7 +111,7 @@ public class AuthenticationServiceTests
         return (query["userId"], query["code"]);
     }
 
-    [Test]
+    [Fact]
     public async Task AuthenticateAsync_SeededUser_ReturnsSignedJwtWithRoles()
     {
         var response = await _service.AuthenticateAsync(new AuthenticationRequest { Email = SeededEmail, Password = SeededPassword });
@@ -127,54 +122,52 @@ public class AuthenticationServiceTests
             ValidAudience = Jwt.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Jwt.Key)),
         }, out _);
+        // Raw token: the validating handler remaps "roles" to ClaimTypes.Role on the way in.
+        var roleClaims = new JwtSecurityTokenHandler().ReadJwtToken(response.Data.JWToken).Claims
+            .Where(c => c.Type == "roles").Select(c => c.Value);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(response.Success, Is.True);
-            Assert.That(response.Data.Id, Is.EqualTo(Constants.SuperAdminUser));
-            Assert.That(response.Data.Email, Is.EqualTo(SeededEmail));
-            Assert.That(response.Data.UserName, Is.EqualTo("superadmin"));
-            Assert.That(response.Data.IsVerified, Is.True);
-            Assert.That(response.Data.Roles, Is.EquivalentTo(new[] { "SuperAdmin", "Admin", "Moderator", "Basic" }));
-            Assert.That(response.Data.RefreshToken, Has.Length.EqualTo(80));
-            Assert.That(principal.FindFirst("uid")?.Value, Is.EqualTo(Constants.SuperAdminUser));
-            // Raw token: the validating handler remaps "roles" to ClaimTypes.Role on the way in.
-            Assert.That(new JwtSecurityTokenHandler().ReadJwtToken(response.Data.JWToken).Claims
-                .Where(c => c.Type == "roles").Select(c => c.Value), Does.Contain("SuperAdmin"));
-        }
+        Assert.True(response.Success);
+        Assert.Equal(Constants.SuperAdminUser, response.Data.Id);
+        Assert.Equal(SeededEmail, response.Data.Email);
+        Assert.Equal("superadmin", response.Data.UserName);
+        Assert.True(response.Data.IsVerified);
+        Assert.Equivalent(new[] { "SuperAdmin", "Admin", "Moderator", "Basic" }, response.Data.Roles);
+        Assert.Equal(80, response.Data.RefreshToken.Length);
+        Assert.Equal(Constants.SuperAdminUser, principal.FindFirst("uid")?.Value);
+        Assert.Contains("SuperAdmin", roleClaims);
     }
 
-    [Test]
-    public void AuthenticateAsync_UnknownEmail_Throws()
+    [Fact]
+    public async Task AuthenticateAsync_UnknownEmail_Throws()
     {
-        var ex = Assert.ThrowsAsync<ApiException>(() =>
+        var ex = await Assert.ThrowsAsync<ApiException>(() =>
             _service.AuthenticateAsync(new AuthenticationRequest { Email = "nobody@example.com", Password = SeededPassword }));
 
-        Assert.That(ex.Message, Does.StartWith("No Accounts Registered"));
+        Assert.StartsWith("No Accounts Registered", ex.Message);
     }
 
-    [Test]
-    public void AuthenticateAsync_WrongPassword_Throws()
+    [Fact]
+    public async Task AuthenticateAsync_WrongPassword_Throws()
     {
-        var ex = Assert.ThrowsAsync<ApiException>(() =>
+        var ex = await Assert.ThrowsAsync<ApiException>(() =>
             _service.AuthenticateAsync(new AuthenticationRequest { Email = SeededEmail, Password = "Wrong@123" }));
 
-        Assert.That(ex.Message, Does.StartWith("Invalid Credentials"));
+        Assert.StartsWith("Invalid Credentials", ex.Message);
     }
 
-    [Test]
+    [Fact]
     public async Task AuthenticateAsync_UnconfirmedUser_Throws()
     {
         var registration = NewRegistration();
         await _service.RegisterAsync(registration, Origin);
 
-        var ex = Assert.ThrowsAsync<ApiException>(() =>
+        var ex = await Assert.ThrowsAsync<ApiException>(() =>
             _service.AuthenticateAsync(new AuthenticationRequest { Email = registration.Email, Password = registration.Password }));
 
-        Assert.That(ex.Message, Does.StartWith("Account Not Confirmed"));
+        Assert.StartsWith("Account Not Confirmed", ex.Message);
     }
 
-    [Test]
+    [Fact]
     public async Task RegisterAsync_CreatesBasicUser_AndReturnsVerificationLink()
     {
         var registration = NewRegistration();
@@ -183,56 +176,54 @@ public class AuthenticationServiceTests
 
         var userManager = _scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
         var user = await userManager.FindByEmailAsync(registration.Email);
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(response.Success, Is.True);
-            Assert.That(response.Data, Is.EqualTo(user!.Id));
-            Assert.That(response.Message, Does.Contain($"{Origin}/api/account/confirm-email/?userId={user.Id}"));
-            Assert.That(await userManager.GetRolesAsync(user), Is.EqualTo(new[] { Roles.Basic.ToString() }));
-            Assert.That(user.EmailConfirmed, Is.False);
-        }
+        Assert.NotNull(user);
+        Assert.True(response.Success);
+        Assert.Equal(user.Id, response.Data);
+        Assert.Contains($"{Origin}/api/account/confirm-email/?userId={user.Id}", response.Message);
+        Assert.Equal([Roles.Basic.ToString()], await userManager.GetRolesAsync(user));
+        Assert.False(user.EmailConfirmed);
         _emailService.Verify(s => s.SendEmailAsync(It.IsAny<MailRequest>()), Times.Never);
     }
 
-    [Test]
+    [Fact]
     public async Task RegisterAsync_WithEmailFeatureEnabled_SendsConfirmationEmail()
     {
         _featureManager.Setup(f => f.IsEnabledAsync(nameof(FeatureManagement.EnableEmailService))).ReturnsAsync(true);
 
         await _service.RegisterAsync(NewRegistration(), Origin);
 
-        Assert.That(_sentEmails.Single().Subject, Is.EqualTo("Confirm Registration"));
+        Assert.Equal("Confirm Registration", Assert.Single(_sentEmails).Subject);
     }
 
-    [Test]
-    public void RegisterAsync_DuplicateUserName_Throws()
+    [Fact]
+    public async Task RegisterAsync_DuplicateUserName_Throws()
     {
         var registration = NewRegistration();
         registration.UserName = "superadmin";
 
-        var ex = Assert.ThrowsAsync<ApiException>(() => _service.RegisterAsync(registration, Origin));
+        var ex = await Assert.ThrowsAsync<ApiException>(() => _service.RegisterAsync(registration, Origin));
 
-        Assert.That(ex.Message, Is.EqualTo("Username 'superadmin' is already taken."));
+        Assert.Equal("Username 'superadmin' is already taken.", ex.Message);
     }
 
-    [Test]
-    public void RegisterAsync_DuplicateEmail_Throws()
+    [Fact]
+    public async Task RegisterAsync_DuplicateEmail_Throws()
     {
         var registration = NewRegistration();
         registration.Email = SeededEmail;
 
-        var ex = Assert.ThrowsAsync<ApiException>(() => _service.RegisterAsync(registration, Origin));
+        var ex = await Assert.ThrowsAsync<ApiException>(() => _service.RegisterAsync(registration, Origin));
 
-        Assert.That(ex.Message, Is.EqualTo($"Email {SeededEmail} is already registered."));
+        Assert.Equal($"Email {SeededEmail} is already registered.", ex.Message);
     }
 
-    [Test]
-    public void RegisterAsync_WeakPassword_ThrowsIdentityError()
+    [Fact]
+    public async Task RegisterAsync_WeakPassword_ThrowsIdentityError()
     {
-        Assert.ThrowsAsync<ApiException>(() => _service.RegisterAsync(NewRegistration(password: "weak"), Origin));
+        await Assert.ThrowsAsync<ApiException>(() => _service.RegisterAsync(NewRegistration(password: "weak"), Origin));
     }
 
-    [Test]
+    [Fact]
     public async Task ConfirmEmailAsync_WithIssuedCode_ConfirmsAccount_SoUserCanSignIn()
     {
         var registration = NewRegistration();
@@ -242,37 +233,34 @@ public class AuthenticationServiceTests
         var confirmed = await _service.ConfirmEmailAsync(userId, code);
         var signIn = await _service.AuthenticateAsync(new AuthenticationRequest { Email = registration.Email, Password = registration.Password });
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(confirmed.Data, Is.EqualTo(userId));
-            Assert.That(signIn.Data.IsVerified, Is.True);
-            Assert.That(signIn.Data.Roles, Is.EqualTo(new[] { "Basic" }));
-        }
+        Assert.Equal(userId, confirmed.Data);
+        Assert.True(signIn.Data.IsVerified);
+        Assert.Equal(["Basic"], signIn.Data.Roles);
     }
 
-    [Test]
+    [Fact]
     public async Task ConfirmEmailAsync_InvalidCode_Throws()
     {
         var registered = await _service.RegisterAsync(NewRegistration(), Origin);
         var (userId, _) = ParseVerificationUri(registered.Message);
         var bogus = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes("not-a-token"));
 
-        Assert.ThrowsAsync<ApiException>(() => _service.ConfirmEmailAsync(userId, bogus));
+        await Assert.ThrowsAsync<ApiException>(() => _service.ConfirmEmailAsync(userId, bogus));
     }
 
-    [Test]
+    [Fact]
     public async Task ForgotPassword_UnknownEmail_SendsNothing()
     {
         await _service.ForgotPassword(new ForgotPasswordRequest { Email = "nobody@example.com" }, Origin);
 
-        Assert.That(_sentEmails, Is.Empty);
+        Assert.Empty(_sentEmails);
     }
 
-    [Test]
+    [Fact]
     public async Task ForgotPassword_ThenResetPassword_ChangesThePassword()
     {
         await _service.ForgotPassword(new ForgotPasswordRequest { Email = SeededEmail }, Origin);
-        var email = _sentEmails.Single();
+        var email = Assert.Single(_sentEmails);
         var token = email.Body["You reset token is - ".Length..];
 
         var reset = await _service.ResetPassword(new ResetPasswordRequest
@@ -282,21 +270,18 @@ public class AuthenticationServiceTests
             Password = "NewPassword@456",
             ConfirmPassword = "NewPassword@456"
         });
-
         var signIn = await _service.AuthenticateAsync(new AuthenticationRequest { Email = SeededEmail, Password = "NewPassword@456" });
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(email.ToEmail, Is.EqualTo(SeededEmail));
-            Assert.That(email.Subject, Is.EqualTo("Reset Password"));
-            Assert.That(reset.Success, Is.True);
-            Assert.That(signIn.Success, Is.True);
-        }
+
+        Assert.Equal(SeededEmail, email.ToEmail);
+        Assert.Equal("Reset Password", email.Subject);
+        Assert.True(reset.Success);
+        Assert.True(signIn.Success);
     }
 
-    [Test]
-    public void ResetPassword_UnknownEmail_Throws()
+    [Fact]
+    public async Task ResetPassword_UnknownEmail_Throws()
     {
-        Assert.ThrowsAsync<ApiException>(() => _service.ResetPassword(new ResetPasswordRequest
+        await Assert.ThrowsAsync<ApiException>(() => _service.ResetPassword(new ResetPasswordRequest
         {
             Email = "nobody@example.com",
             Token = "x",
@@ -304,17 +289,17 @@ public class AuthenticationServiceTests
         }));
     }
 
-    [Test]
-    public void ResetPassword_InvalidToken_Throws()
+    [Fact]
+    public async Task ResetPassword_InvalidToken_Throws()
     {
-        var ex = Assert.ThrowsAsync<ApiException>(() => _service.ResetPassword(new ResetPasswordRequest
+        var ex = await Assert.ThrowsAsync<ApiException>(() => _service.ResetPassword(new ResetPasswordRequest
         {
             Email = SeededEmail,
             Token = "invalid",
             Password = "NewPassword@456"
         }));
 
-        Assert.That(ex.Message, Does.StartWith("Error occured while reseting"));
+        Assert.StartsWith("Error occured while reseting", ex.Message);
     }
 
     private sealed class NoUser : ILoggedInUserService

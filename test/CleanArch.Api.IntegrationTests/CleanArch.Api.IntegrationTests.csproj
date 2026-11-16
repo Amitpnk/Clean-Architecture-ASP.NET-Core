@@ -5,7 +5,7 @@
     <IsTestProject>true</IsTestProject>
     <!-- xUnit v3 test projects are executables. -->
     <OutputType>Exe</OutputType>
-    <!-- Run through VSTest like the NUnit projects, so `dotnet test CleanArch.sln` covers everything. -->
+    <!-- Run through VSTest so `dotnet test` keeps the trx logger and coverlet collector used in CI. -->
     <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
   </PropertyGroup>
 

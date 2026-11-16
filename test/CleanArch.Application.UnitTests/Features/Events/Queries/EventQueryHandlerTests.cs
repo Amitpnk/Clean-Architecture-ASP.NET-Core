@@ -12,7 +12,9 @@ namespace CleanArch.Application.UnitTests.Features.Events.Queries;
 
 public class GetEventsListQueryHandlerTests
 {
-    [Test]
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
+    [Fact]
     public async Task Handle_ReturnsEventsSortedByDate_WithIdMappedToEventId()
     {
         var late = new Event { Id = Guid.NewGuid(), Name = "Late", Date = new DateTime(2027, 12, 1) };
@@ -21,43 +23,39 @@ public class GetEventsListQueryHandlerTests
         repository.Setup(r => r.ListAllAsync()).ReturnsAsync([late, early]);
         var handler = new GetEventsListQueryHandler(MapperFactory.Create(), repository.Object);
 
-        var result = await handler.Handle(new GetEventsListQuery(), CancellationToken.None);
+        var result = await handler.Handle(new GetEventsListQuery(), Ct);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result.Select(e => e.Name), Is.EqualTo(new[] { "Early", "Late" }));
-            Assert.That(result.Select(e => e.EventId), Is.EqualTo(new[] { early.Id, late.Id }));
-        }
+        Assert.Equal(["Early", "Late"], result.Select(e => e.Name));
+        Assert.Equal([early.Id, late.Id], result.Select(e => e.EventId));
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_NoEvents_ReturnsEmptyList()
     {
         var repository = new Mock<IGenericRepositoryAsync<Event>>();
         repository.Setup(r => r.ListAllAsync()).ReturnsAsync([]);
         var handler = new GetEventsListQueryHandler(MapperFactory.Create(), repository.Object);
 
-        var result = await handler.Handle(new GetEventsListQuery(), CancellationToken.None);
+        var result = await handler.Handle(new GetEventsListQuery(), Ct);
 
-        Assert.That(result, Is.Empty);
+        Assert.Empty(result);
     }
 }
 
 public class GetEventDetailQueryHandlerTests
 {
-    private Mock<IGenericRepositoryAsync<Event>> _events;
-    private Mock<IGenericRepositoryAsync<Category>> _categories;
-    private GetEventDetailQueryHandler _handler;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<IGenericRepositoryAsync<Event>> _events = new();
+    private readonly Mock<IGenericRepositoryAsync<Category>> _categories = new();
+    private readonly GetEventDetailQueryHandler _handler;
+
+    public GetEventDetailQueryHandlerTests()
     {
-        _events = new Mock<IGenericRepositoryAsync<Event>>();
-        _categories = new Mock<IGenericRepositoryAsync<Category>>();
         _handler = new GetEventDetailQueryHandler(MapperFactory.Create(), _events.Object, _categories.Object);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_ExistingEvent_ReturnsDetailWithCategory()
     {
         var category = new Category { Id = Guid.NewGuid(), Name = "Concert" };
@@ -65,44 +63,41 @@ public class GetEventDetailQueryHandlerTests
         _events.Setup(r => r.GetByIdAsync(@event.Id)).ReturnsAsync(@event);
         _categories.Setup(r => r.GetByIdAsync(category.Id)).ReturnsAsync(category);
 
-        var result = await _handler.Handle(new GetEventDetailQuery { Id = @event.Id }, CancellationToken.None);
+        var result = await _handler.Handle(new GetEventDetailQuery { Id = @event.Id }, Ct);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result.EventId, Is.EqualTo(@event.Id));
-            Assert.That(result.Name, Is.EqualTo("Live"));
-            Assert.That(result.Description, Is.EqualTo("desc"));
-            Assert.That(result.Date, Is.EqualTo(@event.Date));
-            Assert.That(result.CategoryId, Is.EqualTo(category.Id));
-            Assert.That(result.Category.Id, Is.EqualTo(category.Id));
-            Assert.That(result.Category.Name, Is.EqualTo("Concert"));
-        }
+        Assert.Equal(@event.Id, result.EventId);
+        Assert.Equal("Live", result.Name);
+        Assert.Equal("desc", result.Description);
+        Assert.Equal(@event.Date, result.Date);
+        Assert.Equal(category.Id, result.CategoryId);
+        Assert.Equal(category.Id, result.Category.Id);
+        Assert.Equal("Concert", result.Category.Name);
     }
 
-    [Test]
-    public void Handle_UnknownEvent_ThrowsNotFound()
+    [Fact]
+    public async Task Handle_UnknownEvent_ThrowsNotFound()
     {
         _events.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Event)null);
 
-        Assert.ThrowsAsync<NotFoundException>(() => _handler.Handle(new GetEventDetailQuery { Id = Guid.NewGuid() }, CancellationToken.None));
+        await Assert.ThrowsAsync<NotFoundException>(() => _handler.Handle(new GetEventDetailQuery { Id = Guid.NewGuid() }, Ct));
     }
 
-    [Test]
-    public void Handle_EventWithMissingCategory_ThrowsNotFound()
+    [Fact]
+    public async Task Handle_EventWithMissingCategory_ThrowsNotFound()
     {
         var @event = new Event { Id = Guid.NewGuid(), CategoryId = Guid.NewGuid() };
         _events.Setup(r => r.GetByIdAsync(@event.Id)).ReturnsAsync(@event);
         _categories.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Category)null);
 
-        var ex = Assert.ThrowsAsync<NotFoundException>(() => _handler.Handle(new GetEventDetailQuery { Id = @event.Id }, CancellationToken.None));
+        var ex = await Assert.ThrowsAsync<NotFoundException>(() => _handler.Handle(new GetEventDetailQuery { Id = @event.Id }, Ct));
 
-        Assert.That(ex.Message, Does.StartWith("Category ("));
+        Assert.StartsWith("Category (", ex.Message);
     }
 }
 
 public class GetEventsExportQueryHandlerTests
 {
-    [Test]
+    [Fact]
     public async Task Handle_ExportsEventsSortedByDate_AsCsvFile()
     {
         var late = new Event { Id = Guid.NewGuid(), Name = "Late", Date = new DateTime(2027, 12, 1) };
@@ -119,14 +114,11 @@ public class GetEventsExportQueryHandlerTests
 
         var handler = new GetEventsExportQueryHandler(MapperFactory.Create(), repository.Object, exporter.Object);
 
-        var result = await handler.Handle(new GetEventsExportQuery(), CancellationToken.None);
+        var result = await handler.Handle(new GetEventsExportQuery(), TestContext.Current.CancellationToken);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result.ContentType, Is.EqualTo("text/csv"));
-            Assert.That(result.Data, Is.SameAs(csvBytes));
-            Assert.That(result.EventExportFileName, Does.EndWith(".csv"));
-            Assert.That(exported.Select(e => e.EventId), Is.EqualTo(new[] { early.Id, late.Id }));
-        }
+        Assert.Equal("text/csv", result.ContentType);
+        Assert.Same(csvBytes, result.Data);
+        Assert.EndsWith(".csv", result.EventExportFileName);
+        Assert.Equal([early.Id, late.Id], exported.Select(e => e.EventId));
     }
 }

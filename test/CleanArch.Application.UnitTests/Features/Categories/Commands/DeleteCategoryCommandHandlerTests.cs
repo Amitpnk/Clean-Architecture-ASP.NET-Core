@@ -8,34 +8,34 @@ namespace CleanArch.Application.UnitTests.Features.Categories.Commands;
 
 public class DeleteCategoryCommandHandlerTests
 {
-    private Mock<IGenericRepositoryAsync<Category>> _repository;
-    private DeleteCategoryCommandHandler _handler;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<IGenericRepositoryAsync<Category>> _repository = new();
+    private readonly DeleteCategoryCommandHandler _handler;
+
+    public DeleteCategoryCommandHandlerTests()
     {
-        _repository = new Mock<IGenericRepositoryAsync<Category>>();
         _handler = new DeleteCategoryCommandHandler(_repository.Object);
     }
 
-    [Test]
+    [Fact]
     public async Task Handle_ExistingCategory_DeletesIt()
     {
         var existing = new Category { Id = Guid.NewGuid(), Name = "Concert" };
         _repository.Setup(r => r.GetByIdAsync(existing.Id)).ReturnsAsync(existing);
 
-        await _handler.Handle(new DeleteCategoryCommand { CategoryId = existing.Id }, CancellationToken.None);
+        await _handler.Handle(new DeleteCategoryCommand { CategoryId = existing.Id }, Ct);
 
         _repository.Verify(r => r.DeleteAsync(existing), Times.Once);
     }
 
-    [Test]
-    public void Handle_UnknownCategory_ThrowsNotFound()
+    [Fact]
+    public async Task Handle_UnknownCategory_ThrowsNotFound()
     {
         _repository.Setup(r => r.GetByIdAsync(It.IsAny<Guid>())).ReturnsAsync((Category)null);
 
-        Assert.ThrowsAsync<NotFoundException>(() =>
-            _handler.Handle(new DeleteCategoryCommand { CategoryId = Guid.NewGuid() }, CancellationToken.None));
+        await Assert.ThrowsAsync<NotFoundException>(() =>
+            _handler.Handle(new DeleteCategoryCommand { CategoryId = Guid.NewGuid() }, Ct));
         _repository.Verify(r => r.DeleteAsync(It.IsAny<Category>()), Times.Never);
     }
 }

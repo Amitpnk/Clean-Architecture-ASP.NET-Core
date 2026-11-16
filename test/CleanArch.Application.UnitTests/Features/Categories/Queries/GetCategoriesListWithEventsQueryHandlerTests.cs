@@ -8,8 +8,9 @@ namespace CleanArch.Application.UnitTests.Features.Categories.Queries;
 
 public class GetCategoriesListWithEventsQueryHandlerTests
 {
-    [TestCase(true)]
-    [TestCase(false)]
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public async Task Handle_PassesIncludeHistory_AndMapsCategoriesWithEvents(bool includeHistory)
     {
         var categoryId = Guid.NewGuid();
@@ -27,19 +28,17 @@ public class GetCategoriesListWithEventsQueryHandlerTests
         ]);
         var handler = new GetCategoriesListWithEventsQueryHandler(MapperFactory.Create(), repository.Object);
 
-        var result = await handler.Handle(new GetCategoriesListWithEventsQuery { IncludeHistory = includeHistory }, CancellationToken.None);
+        var result = await handler.Handle(new GetCategoriesListWithEventsQuery { IncludeHistory = includeHistory },
+            TestContext.Current.CancellationToken);
 
-        var category = result.Single();
-        var @event = category.Events.Single();
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(category.CategoryId, Is.EqualTo(categoryId));
-            Assert.That(category.Name, Is.EqualTo("Concert"));
-            Assert.That(@event.EventId, Is.EqualTo(eventId));
-            Assert.That(@event.Name, Is.EqualTo("Live"));
-            Assert.That(@event.Date, Is.EqualTo(date));
-            Assert.That(@event.CategoryId, Is.EqualTo(categoryId));
-        }
+        var category = Assert.Single(result);
+        var @event = Assert.Single(category.Events);
+        Assert.Equal(categoryId, category.CategoryId);
+        Assert.Equal("Concert", category.Name);
+        Assert.Equal(eventId, @event.EventId);
+        Assert.Equal("Live", @event.Name);
+        Assert.Equal(date, @event.Date);
+        Assert.Equal(categoryId, @event.CategoryId);
         repository.Verify(r => r.GetCategoriesWithEvents(includeHistory), Times.Once);
     }
 }

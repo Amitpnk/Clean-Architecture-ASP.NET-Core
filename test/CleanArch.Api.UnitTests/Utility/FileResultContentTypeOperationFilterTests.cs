@@ -17,37 +17,34 @@ public class FileResultContentTypeOperationFilterTests
         new(new ApiDescription(), null, new SchemaRepository(), new OpenApiDocument(),
             typeof(FileResultContentTypeOperationFilterTests).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Static));
 
-    [Test]
+    [Fact]
     public void Apply_AttributedAction_ReplacesResponsesWithBinaryFile()
     {
         var operation = new OpenApiOperation { Responses = new OpenApiResponses { ["400"] = new OpenApiResponse() } };
 
         new FileResultContentTypeOperationFilter().Apply(operation, ContextFor(nameof(FileAction)));
 
-        var response = operation.Responses.Single();
+        var response = Assert.Single(operation.Responses);
         var schema = response.Value.Content!["text/csv"].Schema!;
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(response.Key, Is.EqualTo("200"));
-            Assert.That(response.Value.Description, Is.EqualTo("File"));
-            Assert.That(schema.Type, Is.EqualTo(JsonSchemaType.String));
-            Assert.That(schema.Format, Is.EqualTo("binary"));
-        }
+        Assert.Equal("200", response.Key);
+        Assert.Equal("File", response.Value.Description);
+        Assert.Equal(JsonSchemaType.String, schema.Type);
+        Assert.Equal("binary", schema.Format);
     }
 
-    [Test]
+    [Fact]
     public void Apply_ActionWithoutAttribute_LeavesOperationUntouched()
     {
         var operation = new OpenApiOperation { Responses = new OpenApiResponses { ["400"] = new OpenApiResponse() } };
 
         new FileResultContentTypeOperationFilter().Apply(operation, ContextFor(nameof(PlainAction)));
 
-        Assert.That(operation.Responses.Keys, Is.EqualTo(new[] { "400" }));
+        Assert.Equal(["400"], operation.Responses.Keys);
     }
 
-    [Test]
+    [Fact]
     public void Attribute_ExposesContentType()
     {
-        Assert.That(new FileResultContentTypeAttribute("application/pdf").ContentType, Is.EqualTo("application/pdf"));
+        Assert.Equal("application/pdf", new FileResultContentTypeAttribute("application/pdf").ContentType);
     }
 }

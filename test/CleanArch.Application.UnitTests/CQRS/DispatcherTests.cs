@@ -5,6 +5,8 @@ namespace CleanArch.Application.UnitTests.CQRS;
 
 public class DispatcherTests
 {
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     public sealed record Ping(string Message) : IQuery<string>;
 
     public sealed class PingHandler : IQueryHandler<Ping, string>
@@ -59,19 +61,19 @@ public class DispatcherTests
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateScopes = true, ValidateOnBuild = true });
     }
 
-    [Test]
+    [Fact]
     public async Task Query_ResolvesHandler_AndInfersResponseType()
     {
         using var provider = BuildProvider([]);
         using var scope = provider.CreateScope();
         var dispatcher = scope.ServiceProvider.GetRequiredService<IDispatcher>();
 
-        string result = await dispatcher.Query(new Ping("hi"));
+        string result = await dispatcher.Query(new Ping("hi"), Ct);
 
-        Assert.That(result, Is.EqualTo("pong: hi"));
+        Assert.Equal("pong: hi", result);
     }
 
-    [Test]
+    [Fact]
     public async Task Send_CommandWithResult_ReturnsHandlerResult()
     {
         using var provider = BuildProvider([]);
@@ -79,17 +81,14 @@ public class DispatcherTests
         var dispatcher = scope.ServiceProvider.GetRequiredService<IDispatcher>();
 
         // Both overloads: inferred (cached reflection) and explicit generic arguments.
-        var inferred = await dispatcher.Send(new Add(2, 3));
-        var explicitTypes = await dispatcher.Send<Add, int>(new Add(4, 5));
+        var inferred = await dispatcher.Send(new Add(2, 3), Ct);
+        var explicitTypes = await dispatcher.Send<Add, int>(new Add(4, 5), Ct);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(inferred, Is.EqualTo(5));
-            Assert.That(explicitTypes, Is.EqualTo(9));
-        }
+        Assert.Equal(5, inferred);
+        Assert.Equal(9, explicitTypes);
     }
 
-    [Test]
+    [Fact]
     public async Task Send_RunsPipelineBehaviors_InRegistrationOrder()
     {
         var log = new List<string>();
@@ -97,26 +96,23 @@ public class DispatcherTests
         using var scope = provider.CreateScope();
         var dispatcher = scope.ServiceProvider.GetRequiredService<IDispatcher>();
 
-        var result = await dispatcher.Send(new Touch());
+        var result = await dispatcher.Send(new Touch(), Ct);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(result, Is.EqualTo(Unit.Value));
-            Assert.That(log, Is.EqualTo(new[] { "outer:before", "inner:before", "handler", "inner:after", "outer:after" }));
-        }
+        Assert.Equal(Unit.Value, result);
+        Assert.Equal(["outer:before", "inner:before", "handler", "inner:after", "outer:after"], log);
     }
 
-    [Test]
-    public void Send_WithoutRegisteredHandler_Throws()
+    [Fact]
+    public async Task Send_WithoutRegisteredHandler_Throws()
     {
         using var provider = new ServiceCollection().AddCqrs().BuildServiceProvider();
         using var scope = provider.CreateScope();
         var dispatcher = scope.ServiceProvider.GetRequiredService<IDispatcher>();
 
-        Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.Send(new Add(1, 1)));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => dispatcher.Send(new Add(1, 1), Ct));
     }
 
-    [Test]
+    [Fact]
     public void AddCqrs_RegistersEveryApplicationHandler()
     {
         var services = new ServiceCollection().AddCqrs(typeof(IDispatcher).Assembly);
@@ -129,6 +125,6 @@ public class DispatcherTests
             .ToList();
 
         // 6 commands (create/update/delete x category/event) + 5 queries.
-        Assert.That(handlerServices, Has.Count.EqualTo(11));
+        Assert.Equal(11, handlerServices.Count);
     }
 }

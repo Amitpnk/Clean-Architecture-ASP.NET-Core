@@ -8,38 +8,35 @@ namespace CleanArch.Persistence.UnitTests.Repositories;
 
 public class SeedDataTests : RepositoryTestBase
 {
-    [Test]
+    [Fact]
     public async Task Model_SeedsApplicationAndIdentityData()
     {
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(await DbContext.Categories.CountAsync(), Is.EqualTo(3));
-            Assert.That(await DbContext.Events.CountAsync(), Is.EqualTo(4));
-            Assert.That(await DbContext.Set<IdentityRole>().CountAsync(), Is.EqualTo(4));
-            Assert.That(await DbContext.Users.CountAsync(), Is.EqualTo(2));
-        }
+        Assert.Equal(3, await DbContext.Categories.CountAsync(Ct));
+        Assert.Equal(4, await DbContext.Events.CountAsync(Ct));
+        Assert.Equal(4, await DbContext.Set<IdentityRole>().CountAsync(Ct));
+        Assert.Equal(2, await DbContext.Users.CountAsync(Ct));
     }
 
-    [Test]
+    [Fact]
     public async Task SeededRoles_UseUpperCaseNormalizedNames_SoRoleManagerCanFindThem()
     {
-        var basic = await DbContext.Set<IdentityRole>().SingleAsync(r => r.Id == Constants.Basic);
+        var basic = await DbContext.Set<IdentityRole>().SingleAsync(r => r.Id == Constants.Basic, Ct);
 
-        Assert.That(basic.NormalizedName, Is.EqualTo("BASIC"));
+        Assert.Equal("BASIC", basic.NormalizedName);
     }
 
-    [Test]
+    [Fact]
     public async Task SeededUsers_HaveSecurityStamp()
     {
-        var users = await DbContext.Users.ToListAsync();
+        var users = await DbContext.Users.ToListAsync(Ct);
 
-        Assert.That(users.Select(u => u.SecurityStamp), Is.All.Not.Null.And.Not.Empty);
+        Assert.All(users, u => Assert.False(string.IsNullOrEmpty(u.SecurityStamp)));
     }
 }
 
 public class GenericRepositoryTests : RepositoryTestBase
 {
-    [Test]
+    [Fact]
     public async Task AddAsync_PersistsEntity_AndStampsAuditColumns()
     {
         var repository = new GenericRepository<Category>(DbContext);
@@ -47,19 +44,16 @@ public class GenericRepositoryTests : RepositoryTestBase
         var added = await repository.AddAsync(new Category { Id = Guid.NewGuid(), Name = "Workshops" });
 
         var reloaded = await repository.GetByIdAsync(added.Id);
-        var audit = await DbContext.AuditTrails.SingleAsync();
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(reloaded, Is.Not.Null);
-            Assert.That(reloaded.CreatedBy, Is.EqualTo("unit-test-user"));
-            Assert.That(reloaded.CreatedDate, Is.EqualTo(FixedUtcNow));
-            Assert.That(audit.TableName, Is.EqualTo(nameof(Category)));
-            Assert.That(audit.Type, Is.EqualTo(AuditType.Create.ToString()));
-            Assert.That(audit.UserId, Is.EqualTo("unit-test-user"));
-        }
+        var audit = await DbContext.AuditTrails.SingleAsync(Ct);
+        Assert.NotNull(reloaded);
+        Assert.Equal("unit-test-user", reloaded.CreatedBy);
+        Assert.Equal(FixedUtcNow, reloaded.CreatedDate);
+        Assert.Equal(nameof(Category), audit.TableName);
+        Assert.Equal(AuditType.Create.ToString(), audit.Type);
+        Assert.Equal("unit-test-user", audit.UserId);
     }
 
-    [Test]
+    [Fact]
     public async Task DeleteAsync_RemovesEntity()
     {
         var repository = new GenericRepository<Category>(DbContext);
@@ -67,41 +61,47 @@ public class GenericRepositoryTests : RepositoryTestBase
 
         await repository.DeleteAsync(category);
 
-        Assert.That(await repository.GetByIdAsync(category.Id), Is.Null);
+        Assert.Null(await repository.GetByIdAsync(category.Id));
     }
 
-    [Test]
+    [Fact]
     public async Task GetPagedReponseAsync_ReturnsRequestedPage()
     {
         var repository = new GenericRepository<Category>(DbContext);
 
         var page = await repository.GetPagedReponseAsync(page: 2, size: 2);
 
-        Assert.That(page, Has.Count.EqualTo(1));
+        Assert.Single(page);
+    }
+
+    [Fact]
+    public async Task ListAllAsync_ReturnsEverySeededRow()
+    {
+        var repository = new GenericRepository<Event>(DbContext);
+
+        Assert.Equal(4, (await repository.ListAllAsync()).Count);
     }
 }
 
 public class CategoryRepositoryTests : RepositoryTestBase
 {
-    [Test]
-    public async Task IsCategoryName_MatchesExistingName()
+    [Theory]
+    [InlineData("Concert", true)]
+    [InlineData("Unknown", false)]
+    public async Task IsCategoryName_MatchesExistingNames(string name, bool expected)
     {
         var repository = new CategoryRepository(DbContext);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(await repository.IsCategoryName("Concert"), Is.True);
-            Assert.That(await repository.IsCategoryName("Unknown"), Is.False);
-        }
+        Assert.Equal(expected, await repository.IsCategoryName(name));
     }
 
-    [Test]
+    [Fact]
     public async Task GetCategoriesWithEvents_ExcludesPastEvents_UnlessHistoryRequested()
     {
-        var category = DbContext.Categories.First();
+        var category = await DbContext.Categories.FirstAsync(Ct);
         DbContext.Events.Add(new Event { Id = Guid.NewGuid(), Name = "Past", Date = DateTime.Today.AddDays(-1), CategoryId = category.Id });
         DbContext.Events.Add(new Event { Id = Guid.NewGuid(), Name = "Future", Date = DateTime.Today.AddDays(1), CategoryId = category.Id });
-        await DbContext.SaveChangesAsync();
+        await DbContext.SaveChangesAsync(Ct);
         DbContext.ChangeTracker.Clear();
 
         var repository = new CategoryRepository(DbContext);
@@ -109,27 +109,21 @@ public class CategoryRepositoryTests : RepositoryTestBase
         var upcoming = (await repository.GetCategoriesWithEvents(includePassedEvents: false)).Single(c => c.Id == category.Id);
         var all = (await repository.GetCategoriesWithEvents(includePassedEvents: true)).Single(c => c.Id == category.Id);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(upcoming.Events.Select(e => e.Name), Does.Not.Contain("Past"));
-            Assert.That(upcoming.Events.Select(e => e.Name), Does.Contain("Future"));
-            Assert.That(all.Events.Select(e => e.Name), Does.Contain("Past"));
-        }
+        Assert.DoesNotContain("Past", upcoming.Events.Select(e => e.Name));
+        Assert.Contains("Future", upcoming.Events.Select(e => e.Name));
+        Assert.Contains("Past", all.Events.Select(e => e.Name));
     }
 }
 
 public class EventRepositoryTests : RepositoryTestBase
 {
-    [Test]
+    [Fact]
     public async Task IsEventNameAndDateUnique_DetectsSameNameOnSameDay()
     {
-        var seeded = await DbContext.Events.FirstAsync();
+        var seeded = await DbContext.Events.FirstAsync(Ct);
         var repository = new EventRepository(DbContext);
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.AddHours(3)), Is.True);
-            Assert.That(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.AddDays(1)), Is.False);
-        }
+        Assert.True(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.AddHours(3)));
+        Assert.False(await repository.IsEventNameAndDateUnique(seeded.Name, seeded.Date.AddDays(1)));
     }
 }

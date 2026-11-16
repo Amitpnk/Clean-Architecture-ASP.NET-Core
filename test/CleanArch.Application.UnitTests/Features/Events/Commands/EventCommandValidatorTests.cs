@@ -7,109 +7,113 @@ namespace CleanArch.Application.UnitTests.Features.Events.Commands;
 
 public class CreateEventCommandValidatorTests
 {
-    private Mock<IEventRepository> _repository;
-    private CreateEventCommandValidator _validator;
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    [SetUp]
-    public void SetUp()
+    private readonly Mock<IEventRepository> _repository = new();
+    private readonly CreateEventCommandValidator _validator;
+
+    public CreateEventCommandValidatorTests()
     {
-        _repository = new Mock<IEventRepository>();
         _repository.Setup(r => r.IsEventNameAndDateUnique(It.IsAny<string>(), It.IsAny<DateTime>())).ReturnsAsync(false);
         _validator = new CreateEventCommandValidator(_repository.Object);
     }
 
     private static CreateEventCommand Valid() => new() { Name = "Expo", Date = DateTime.Now.AddDays(1) };
 
-    [Test]
+    [Fact]
     public async Task ValidCommand_IsValid()
     {
-        var result = await _validator.ValidateAsync(Valid());
+        var result = await _validator.ValidateAsync(Valid(), Ct);
 
-        Assert.That(result.IsValid, Is.True);
+        Assert.True(result.IsValid);
     }
 
-    [TestCase(null)]
-    [TestCase("")]
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
     public async Task MissingName_IsInvalid(string name)
     {
         var command = Valid();
         command.Name = name;
 
-        var result = await _validator.ValidateAsync(command);
+        var result = await _validator.ValidateAsync(command, Ct);
 
-        Assert.That(result.Errors.Select(e => e.PropertyName), Does.Contain(nameof(CreateEventCommand.Name)));
+        Assert.Contains(nameof(CreateEventCommand.Name), result.Errors.Select(e => e.PropertyName));
     }
 
-    [Test]
+    [Fact]
     public async Task NameLongerThan50_IsInvalid()
     {
         var command = Valid();
         command.Name = new string('x', 51);
 
-        var result = await _validator.ValidateAsync(command);
+        var result = await _validator.ValidateAsync(command, Ct);
 
-        Assert.That(result.Errors.Select(e => e.ErrorMessage), Does.Contain("Name must not exceed 50 characters."));
+        Assert.Contains("Name must not exceed 50 characters.", result.Errors.Select(e => e.ErrorMessage));
     }
 
-    [Test]
+    [Fact]
     public async Task PastDate_IsInvalid()
     {
         var command = Valid();
         command.Date = DateTime.Now.AddDays(-1);
 
-        var result = await _validator.ValidateAsync(command);
+        var result = await _validator.ValidateAsync(command, Ct);
 
-        Assert.That(result.Errors.Select(e => e.PropertyName), Does.Contain(nameof(CreateEventCommand.Date)));
+        Assert.Contains(nameof(CreateEventCommand.Date), result.Errors.Select(e => e.PropertyName));
     }
 
-    [Test]
+    [Fact]
     public async Task MissingDate_IsInvalid()
     {
         var command = Valid();
         command.Date = default;
 
-        var result = await _validator.ValidateAsync(command);
+        var result = await _validator.ValidateAsync(command, Ct);
 
-        Assert.That(result.Errors.Select(e => e.PropertyName), Does.Contain(nameof(CreateEventCommand.Date)));
+        Assert.Contains(nameof(CreateEventCommand.Date), result.Errors.Select(e => e.PropertyName));
     }
 
-    [Test]
+    [Fact]
     public async Task DuplicateNameAndDate_IsInvalid()
     {
         _repository.Setup(r => r.IsEventNameAndDateUnique("Expo", It.IsAny<DateTime>())).ReturnsAsync(true);
 
-        var result = await _validator.ValidateAsync(Valid());
+        var result = await _validator.ValidateAsync(Valid(), Ct);
 
-        Assert.That(result.Errors.Select(e => e.ErrorMessage), Does.Contain("An event with the same name and date already exists."));
+        Assert.Contains("An event with the same name and date already exists.", result.Errors.Select(e => e.ErrorMessage));
     }
 }
 
 public class UpdateEventCommandValidatorTests
 {
+    private static CancellationToken Ct => TestContext.Current.CancellationToken;
+
     private readonly UpdateEventCommandValidator _validator = new();
 
-    [Test]
+    [Fact]
     public async Task ValidName_IsValid()
     {
-        var result = await _validator.ValidateAsync(new UpdateEventCommand { Name = "Expo" });
+        var result = await _validator.ValidateAsync(new UpdateEventCommand { Name = "Expo" }, Ct);
 
-        Assert.That(result.IsValid, Is.True);
+        Assert.True(result.IsValid);
     }
 
-    [TestCase(null)]
-    [TestCase("")]
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
     public async Task MissingName_IsInvalid(string name)
     {
-        var result = await _validator.ValidateAsync(new UpdateEventCommand { Name = name });
+        var result = await _validator.ValidateAsync(new UpdateEventCommand { Name = name }, Ct);
 
-        Assert.That(result.IsValid, Is.False);
+        Assert.False(result.IsValid);
     }
 
-    [Test]
+    [Fact]
     public async Task NameLongerThan50_IsInvalid()
     {
-        var result = await _validator.ValidateAsync(new UpdateEventCommand { Name = new string('x', 51) });
+        var result = await _validator.ValidateAsync(new UpdateEventCommand { Name = new string('x', 51) }, Ct);
 
-        Assert.That(result.IsValid, Is.False);
+        Assert.False(result.IsValid);
     }
 }

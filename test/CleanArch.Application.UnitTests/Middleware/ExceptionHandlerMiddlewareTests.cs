@@ -19,11 +19,11 @@ public class ExceptionHandlerMiddlewareTests
         await middleware.Invoke(context);
 
         context.Response.Body.Position = 0;
-        var body = await new StreamReader(context.Response.Body).ReadToEndAsync();
+        var body = await new StreamReader(context.Response.Body).ReadToEndAsync(TestContext.Current.CancellationToken);
         return (context, body);
     }
 
-    [Test]
+    [Fact]
     public async Task NoException_PassesThroughUntouched()
     {
         var called = false;
@@ -34,82 +34,64 @@ public class ExceptionHandlerMiddlewareTests
             return Task.CompletedTask;
         });
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(called, Is.True);
-            Assert.That(context.Response.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
-            Assert.That(body, Is.Empty);
-        }
+        Assert.True(called);
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Empty(body);
     }
 
-    [Test]
+    [Fact]
     public async Task ValidationException_Returns400_WithErrorList()
     {
         var failures = new ValidationResult([new ValidationFailure("Name", "Name is required.")]);
 
         var (context, body) = await InvokeAsync(_ => throw new ValidationException(failures));
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(context.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-            Assert.That(context.Response.ContentType, Is.EqualTo("application/json"));
-            Assert.That(JsonConvert.DeserializeObject<List<string>>(body), Is.EqualTo(new[] { "Name is required." }));
-        }
+        Assert.Equal((int)HttpStatusCode.BadRequest, context.Response.StatusCode);
+        Assert.Equal("application/json", context.Response.ContentType);
+        Assert.Equal(["Name is required."], JsonConvert.DeserializeObject<List<string>>(body));
     }
 
-    [Test]
+    [Fact]
     public async Task BadRequestException_Returns400_WithMessage()
     {
         var (context, body) = await InvokeAsync(_ => throw new BadRequestException("bad input"));
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(context.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
-            Assert.That(body, Is.EqualTo("bad input"));
-        }
+        Assert.Equal((int)HttpStatusCode.BadRequest, context.Response.StatusCode);
+        Assert.Equal("bad input", body);
     }
 
-    [Test]
+    [Fact]
     public async Task NotFoundException_Returns404()
     {
         var (context, body) = await InvokeAsync(_ => throw new NotFoundException("Event", 1));
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(context.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
-            Assert.That(body, Is.EqualTo("Event (1) is not found"));
-        }
+        Assert.Equal((int)HttpStatusCode.NotFound, context.Response.StatusCode);
+        Assert.Equal("Event (1) is not found", body);
     }
 
-    [Test]
+    [Fact]
     public async Task ApiException_Returns500_WithMessage()
     {
         var (context, body) = await InvokeAsync(_ => throw new ApiException("Invalid Credentials"));
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(context.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
-            Assert.That(body, Is.EqualTo("Invalid Credentials"));
-        }
+        Assert.Equal((int)HttpStatusCode.InternalServerError, context.Response.StatusCode);
+        Assert.Equal("Invalid Credentials", body);
     }
 
-    [Test]
+    [Fact]
     public async Task UnknownException_Returns500()
     {
         var (context, body) = await InvokeAsync(_ => throw new InvalidOperationException("boom"));
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(context.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
-            Assert.That(body, Is.EqualTo("boom"));
-        }
+        Assert.Equal((int)HttpStatusCode.InternalServerError, context.Response.StatusCode);
+        Assert.Equal("boom", body);
     }
 
-    [Test]
+    [Fact]
     public async Task ExceptionWithEmptyMessage_WritesJsonEnvelope()
     {
-        var (context, body) = await InvokeAsync(_ => throw new BadRequestException(string.Empty));
+        var (_, body) = await InvokeAsync(_ => throw new BadRequestException(string.Empty));
 
-        Assert.That(body, Does.Contain("\"StatusCode\":400"));
+        Assert.Contains("\"StatusCode\":400", body);
     }
 }

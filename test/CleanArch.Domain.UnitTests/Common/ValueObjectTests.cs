@@ -28,63 +28,51 @@ public class ValueObjectTests
         }
     }
 
-    [Test]
+    [Fact]
     public void SameValues_AreEqual_AndShareHashCode()
     {
         var a = new Address("Main St", "Pune");
         var b = new Address("Main St", "Pune");
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(a.Equals(b), Is.True);
-            Assert.That(a == b, Is.True);
-            Assert.That(a != b, Is.False);
-            Assert.That(a.GetHashCode(), Is.EqualTo(b.GetHashCode()));
-        }
+        Assert.True(a.Equals(b));
+        Assert.True(a == b);
+        Assert.False(a != b);
+        Assert.Equal(a.GetHashCode(), b.GetHashCode());
     }
 
-    [Test]
+    [Fact]
     public void DifferentValues_AreNotEqual()
     {
         var a = new Address("Main St", "Pune");
         var b = new Address("Main St", "Goa");
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(a.Equals(b), Is.False);
-            Assert.That(a == b, Is.False);
-            Assert.That(a != b, Is.True);
-        }
+        Assert.False(a.Equals(b));
+        Assert.False(a == b);
+        Assert.True(a != b);
     }
 
-    [Test]
+    [Fact]
     public void NullComponents_AreComparedSafely()
     {
         var withNull = new Address(null, "Pune");
         var alsoNull = new Address(null, "Pune");
         var withValue = new Address("Main St", "Pune");
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(withNull.Equals(alsoNull), Is.True);
-            Assert.That(withNull.Equals(withValue), Is.False);
-            Assert.That(withValue.Equals(withNull), Is.False);
-            Assert.That(withNull.GetHashCode(), Is.EqualTo(alsoNull.GetHashCode()));
-        }
+        Assert.True(withNull.Equals(alsoNull));
+        Assert.False(withNull.Equals(withValue));
+        Assert.False(withValue.Equals(withNull));
+        Assert.Equal(withNull.GetHashCode(), alsoNull.GetHashCode());
     }
 
-    [Test]
+    [Fact]
     public void NullOrDifferentType_IsNotEqual()
     {
         var a = new Address("Main St", "Pune");
 
-        using (Assert.EnterMultipleScope())
-        {
-            Assert.That(a.Equals(null), Is.False);
-            Assert.That(a.Equals(new OtherAddress("Main St", "Pune")), Is.False);
-            Assert.That(a == null, Is.False);
-            Assert.That(null == a, Is.False);
-            Assert.That((Address)null == null, Is.True);
-        }
+        Assert.False(a.Equals(null));
+        Assert.False(a.Equals(new OtherAddress("Main St", "Pune")));
+        Assert.False(a == null);
+        Assert.False(null == a);
+        Assert.True((Address)null == null);
     }
 }
